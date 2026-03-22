@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PeriodeHoraire {
+  SCOLAIRE
+  VACANCES
+}
+
+model Utilisateur {
+  id            Int      @id @default(autoincrement())
+  nom_prenom    String
+  email         String   @unique
+  mot_de_passe  String
+  pronoms       String?
+  photo         String?
+  role          Role     @default(USER)
+  created_at    DateTime @default(now())
+
+  favoris       Favori[]
+  avis          Avis[]
+}
+
+model Piscine {
+  id                  Int      @id @default(autoincrement())
+  nom                 String
+  adresse             String
+  arrondissement      Int
+  latitude            Float?
+  longitude           Float?
+  description         String?
+  telephone           String?
+  email               String?
+  site_web            String?
+
+  acces_pmr           Boolean  @default(false)
+  queer_friendly      Boolean  @default(false)
+  accepte_passe_paris Boolean  @default(true)
+  is_open             Boolean  @default(true)
+  espace_solarium     Boolean  @default(false)
+
+  activites           String[]
+  images_galerie      String[]
+
+  prix_entree_normal          Float?
+  prix_entree_reduit          Float?
+  prix_carnet_normal          Float?
+  prix_carnet_reduit          Float?
+  prix_abonnement_normal      Float?
+  prix_abonnement_reduit      Float?
+  prix_brevet_natation        Float?
+
+  seche_cheveux               Boolean @default(false)
+  distributeur_equipements    Boolean @default(false)
+  douche_pmr                  Boolean @default(false)
+  douches_collectives_mixtes  Boolean @default(false)
+  douches_individuelles       Boolean @default(false)
+  vestiaires_mixtes           Boolean @default(false)
+  casiers                     Boolean @default(false)
+  cabine_pmr                  Boolean @default(false)
+  parking_velos               Boolean @default(false)
+  toilettes                   Boolean @default(true)
+  wifi                        Boolean @default(false)
+  table_a_langer              Boolean @default(false)
+  distributeur_boisson        Boolean @default(false)
+  defibrillateur              Boolean @default(false)
+  admission_animaux           Boolean @default(false)
+
+  last_updated_at     DateTime @updatedAt
+  created_at          DateTime @default(now())
+
+  bassins             Bassin[]
+  horaires_reguliers  HoraireRegulier[]
+  horaires_exceptions HoraireException[]
+  favoris             Favori[]
+  avis                Avis[]
+}
+
+model Bassin {
+  id              Int     @id @default(autoincrement())
+  nom             String?
+  longueur        Float?
+  largeur         Float?
+  profondeur_min  Float?
+  profondeur_max  Float?
+  nb_couloirs     Int?
+  revetement      String?
+  traitement_eau  String?
+  temperature     Float?
+  lumiere         String?
+  piscineId       Int
+
+  piscine         Piscine @relation(fields: [piscineId], references: [id])
+}
+
+model HoraireRegulier {
+  id               Int            @id @default(autoincrement())
+  periode          PeriodeHoraire
+  jour             String
+  heure_ouverture  String
+  heure_fermeture  String
+  ferme            Boolean        @default(false)
+  piscineId        Int
+
+  piscine          Piscine        @relation(fields: [piscineId], references: [id])
+}
+
+model HoraireException {
+  id               Int      @id @default(autoincrement())
+  date_debut       DateTime
+  date_fin         DateTime
+  heure_ouverture  String?
+  heure_fermeture  String?
+  ferme            Boolean  @default(false)
+  motif            String?
+  piscineId        Int
+
+  piscine          Piscine  @relation(fields: [piscineId], references: [id])
+}
+
+model Favori {
+  id             Int          @id @default(autoincrement())
+  utilisateurId  Int
+  piscineId      Int
+  created_at     DateTime     @default(now())
+
+  utilisateur    Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  piscine        Piscine      @relation(fields: [piscineId], references: [id])
+
+  @@unique([utilisateurId, piscineId])
+}
+
+model Avis {
+  id                        Int          @id @default(autoincrement())
+  note_accessibilite        Int
+  commentaire_accessibilite String
+  note_accueil              Int
+  commentaire_accueil       String
+  note_bassin               Int
+  commentaire_bassin        String
+  note_vestiaires           Int
+  commentaire_vestiaires    String
+  created_at                DateTime     @default(now())
+  utilisateurId             Int
+  piscineId                 Int
+
+  utilisateur               Utilisateur  @relation(fields: [utilisateurId], references: [id])
+  piscine                   Piscine      @relation(fields: [piscineId], references: [id])
+
+  @@unique([utilisateurId, piscineId])
+}
