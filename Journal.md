@@ -4,16 +4,18 @@
 
 ---
 
-## Phase 2 — Développement du back-end
+## Phase 4 : Développement Technique
 
-### Étape 1 — Fondations du back-end
+### DEVÉLOPPEMENT BACK-END (API/BDD)
+
+#### Sous-Étape 1 : Fondations du back-end
 **Période : 13 – 26 mars 2025**
 
 ---
 
-#### 13 mars 2025
+##### 13 mars 2025
 
-##### Initialisation du projet Next.js et configuration de l'environnement
+###### Initialisation du projet Next.js et configuration de l'environnement
 
 Démarrage effectif du développement back-end. Le choix de Next.js (App Router) comme framework principal a été confirmé, ce qui implique l'abandon de l'approche initiale avec Express.js : Next.js intègre nativement un système de Route Handlers qui remplace avantageusement un serveur Express séparé, simplifiant l'architecture globale du projet et réduisant le nombre de services à déployer.
 
@@ -27,7 +29,7 @@ Le projet a été initialisé avec les options suivantes :
 
 Un dépôt GitHub a été créé et le premier commit a été effectué dès l'initialisation du projet.
 
-##### Installation et configuration de Prisma
+###### Installation et configuration de Prisma
 
 Prisma a été choisi comme ORM pour la gestion de la base de données PostgreSQL. L'installation a nécessité plusieurs ajustements liés aux changements de comportement introduits dans les versions récentes de Prisma :
 
@@ -42,13 +44,13 @@ Prisma a été choisi comme ORM pour la gestion de la base de données PostgreSQ
 
 ---
 
-#### 20 mars 2025
+##### 20 mars 2025
 
-##### Singleton PrismaClient
+###### Singleton PrismaClient
 
 Mise en place du pattern singleton pour `PrismaClient` dans `src/lib/prisma.ts`. Ce pattern est indispensable dans un environnement Next.js en développement : le rechargement à chaud du serveur (`hot reload`) crée de nouvelles instances à chaque modification de fichier, ce qui peut épuiser rapidement le nombre de connexions autorisées par Neon. Le singleton stocke l'instance dans `globalThis` pour la réutiliser entre les rechargements.
 
-##### Refonte du modèle de données
+###### Refonte du modèle de données
 
 L'analyse des données réelles de cinq piscines parisiennes a révélé que le schéma initial était insuffisant. Un travail de recherche sur les pages officielles des piscines municipales de Paris a permis d'identifier les données manquantes et de revoir l'architecture de la base de données.
 
@@ -65,15 +67,15 @@ Les modifications suivantes ont été apportées au `schema.prisma` :
 - Ajout d'un enum `PeriodeHoraire` (`SCOLAIRE` / `VACANCES`) sur `HoraireRegulier`
 - Ajout du champ `activites` en tant que tableau de chaînes de caractères (`String[]`) directement sur `Piscine`
 
-##### Migration du schéma final
+###### Migration du schéma final
 
 Exécution de la migration `npx prisma migrate dev --name refactor_schema_complet`, qui a créé l'ensemble des tables dans la base de données Neon. Vérification des tables dans Prisma Studio.
 
 ---
 
-#### 21 mars 2025
+##### 21 mars 2025
 
-##### Écriture du fichier de seed
+###### Écriture du fichier de seed
 
 Rédaction du fichier `prisma/seed.ts` avec les données réelles de cinq piscines parisiennes :
 
@@ -89,9 +91,9 @@ Chaque entrée inclut les données complètes : coordonnées géographiques, inf
 
 ---
 
-#### 25 – 26 mars 2025
+##### 25 – 26 mars 2025
 
-##### Création des premiers Route Handlers
+###### Création des premiers Route Handlers
 
 Mise en place des deux premiers endpoints de l'API :
 
@@ -103,4 +105,4 @@ Les deux endpoints ont été testés avec Postman et documentés dans la collect
 
 ---
 
-*Prochaine étape : Étape 2 - Authentification avec NextAuth.js*
+*Prochaine étape : Sous-Étape 2 - Authentification avec NextAuth.js*
