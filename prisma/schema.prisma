@@ -17,18 +17,69 @@ enum PeriodeHoraire {
   VACANCES
 }
 
-model Utilisateur {
-  id            Int      @id @default(autoincrement())
-  nom_prenom    String
-  email         String   @unique
-  mot_de_passe  String
-  pronoms       String?
-  photo         String?
-  role          Role     @default(USER)
-  created_at    DateTime @default(now())
+// Modelo base requerido por Better Auth
+model user {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
 
+  // Campos personalizados de Piscines de Paris
+  mot_de_passe  String?
+  pronoms       String?
+  role          Role      @default(USER)
+
+  // Modelos requeridos por Better Auth
+  sessions      session[]
+  accounts      account[]
+
+  // Relaciones propias del proyecto
   favoris       Favori[]
   avis          Avis[]
+}
+
+// Requerido por Better Auth
+model session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Requerido por Better Auth
+model account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+}
+
+// Requerido por Better Auth
+model verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
 }
 
 model Piscine {
@@ -129,19 +180,19 @@ model HoraireException {
 }
 
 model Favori {
-  id             Int          @id @default(autoincrement())
-  utilisateurId  Int
-  piscineId      Int
-  created_at     DateTime     @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  piscineId  Int
+  created_at DateTime @default(now())
 
-  utilisateur    Utilisateur  @relation(fields: [utilisateurId], references: [id])
-  piscine        Piscine      @relation(fields: [piscineId], references: [id])
+  user       user     @relation(fields: [userId], references: [id])
+  piscine    Piscine  @relation(fields: [piscineId], references: [id])
 
-  @@unique([utilisateurId, piscineId])
+  @@unique([userId, piscineId])
 }
 
 model Avis {
-  id                        Int          @id @default(autoincrement())
+  id                        String   @id @default(cuid())
   note_accessibilite        Int
   commentaire_accessibilite String
   note_accueil              Int
@@ -150,12 +201,12 @@ model Avis {
   commentaire_bassin        String
   note_vestiaires           Int
   commentaire_vestiaires    String
-  created_at                DateTime     @default(now())
-  utilisateurId             Int
+  created_at                DateTime @default(now())
+  userId                    String
   piscineId                 Int
 
-  utilisateur               Utilisateur  @relation(fields: [utilisateurId], references: [id])
-  piscine                   Piscine      @relation(fields: [piscineId], references: [id])
+  user                      user     @relation(fields: [userId], references: [id])
+  piscine                   Piscine  @relation(fields: [piscineId], references: [id])
 
-  @@unique([utilisateurId, piscineId])
+  @@unique([userId, piscineId])
 }
