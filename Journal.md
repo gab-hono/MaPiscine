@@ -106,3 +106,131 @@ Les deux endpoints ont été testés avec Postman et documentés dans la collect
 ---
 
 *Prochaine étape : Sous-Étape 2 - Authentification avec NextAuth.js*
+
+
+### 📅 12/04/2026
+**Sprint:** S2 : Authentification  
+**État d'avancement:** 🟢 Fluide
+
+---
+
+**✅ Réalisé aujourd'hui :**
+
+**1. Tentative d'installation de NextAuth v5 beta**
+Installation de `next-auth@beta` (v5.0.0-beta.30). Lors de la génération du secret avec `npx auth secret`, le CLI a installé automatiquement `Better Auth` au lieu de NextAuth, affichant `BETTER_AUTH_SECRET` dans le `.env`. Cela a révélé que **NextAuth.js fait désormais partie de Better Auth**, son successeur direct.
+
+**2. Décision technique : migration vers Better Auth**
+Après analyse, la décision a été prise d'abandonner NextAuth v5 beta au profit de **Better Auth v1.6.2** pour les raisons suivantes :
+- Better Auth est une version stable (pas en beta)
+- API plus moderne, conçue nativement pour le App Router de Next.js
+- Intégration Prisma native sans adapter séparé
+- Le CLI officiel de NextAuth pointe désormais vers Better Auth, ce qui confirme la direction du projet
+
+Désinstallation de NextAuth : `npm uninstall next-auth`  
+Installation de Better Auth : `npm install better-auth`
+
+**3. Installation de bcryptjs**
+```bash
+npm install bcryptjs && npm install -D @types/bcryptjs
+```
+`bcryptjs` est une librairie de hashage de mots de passe. Elle permet de transformer un mot de passe en clair en une chaîne cryptée impossible à déchiffrer, ce qui garantit qu'aucun mot de passe n'est stocké en clair dans la base de données. `@types/bcryptjs` ajoute les définitions TypeScript nécessaires.
+
+**4. Génération du AUTH_SECRET**
+Le secret d'authentification a été généré manuellement avec Node.js :
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+Ce secret est une clé cryptographique utilisée pour signer et vérifier les tokens de session. Il a été ajouté manuellement au fichier `.env` sous la clé `AUTH_SECRET`.
+
+**5. Création de `src/lib/auth.ts`**
+Ce fichier est le **point de configuration central de Better Auth**. Il initialise le système d'authentification en connectant Better Auth à la base de données via l'adapter Prisma, en activant l'authentification par email/password, et en déclarant les champs personnalisés du modèle `user` propres au projet (`role`, `pronoms`). Toute la logique d'auth de l'application passe par ce fichier.
+
+**6. Création de `src/app/api/auth/[...all]/route.ts`**
+Ce fichier est le **Route Handler universel de Better Auth**. Il expose automatiquement toutes les routes d'authentification nécessaires (`/api/auth/sign-up/email`, `/api/auth/sign-in/email`, `/api/auth/sign-out`, etc.) sans qu'il soit nécessaire de les créer manuellement. Le nom du dossier `[...all]` est une convention de Next.js App Router qui capture tous les sous-chemins.
+
+**7. Modification du schema Prisma pour Better Auth**
+Better Auth nécessite des modèles spécifiques dans la base de données. Le schema a été restructuré avec les changements suivants :
+- `Utilisateur` → remplacé par `user` (convention Better Auth, en minuscule)
+- `id` de `user`, `Favori` et `Avis` : type `Int` → `String` (Better Auth utilise des IDs string générés automatiquement)
+- Ajout des modèles requis par Better Auth : `session`, `account`, `verification`
+- Champs `utilisateurId` dans `Favori` et `Avis` → renommés en `userId`
+- Les champs personnalisés (`role`, `pronoms`) sont conservés dans le modèle `user` via `additionalFields`
+
+**8. Migration de la base de données**
+```bash
+npx prisma migrate dev --name add-better-auth
+```
+Migration appliquée avec succès. Les nouvelles tables ont été créées dans Neon et le client Prisma a été régénéré.
+
+**9. Création de `src/app/api/auth/register/route.ts`**
+Endpoint personnalisé `POST /api/auth/register` pour l'inscription des utilisateurs. Bien que Better Auth expose déjà `/api/auth/sign-up/email`, cet endpoint intermédiaire a été créé pour :
+- Valider les champs obligatoires avant d'appeler Better Auth (`name`, `email`, `password`)
+- Valider le format de l'email et la longueur minimale du mot de passe (8 caractères)
+- Vérifier l'unicité de l'email avec un message d'erreur clair (`409 Conflict`)
+- Enregistrer les champs personnalisés comme `pronoms`
+- Retourner un `201 Created` avec les données de l'utilisateur sans le mot de passe
+
+**10. Tests Postman — Inscription**
+
+| Scénario | Status | Résultat |
+|---|---|---|
+| Inscription valide | `201` | Utilisateur créé avec `id`, `name`, `email`, `role`, `pronoms` |
+| Email déjà utilisé | `409` | `{"error":"Cet email est déjà utilisé"}` |
+| Champs manquants | `400` | `{"error":"Nom, email et mot de passe sont obligatoires"}` |
+| Mot de passe trop court | `400` | `{"error":"Le mot de passe doit contenir au moins 8 caractères"}` |
+
+**11. Tests Postman — Connexion**
+Route utilisée : `POST /api/auth/sign-in/email`  
+Headers requis : `Content-Type: application/json`, `Origin: http://localhost:3000`
+
+| Scénario | Status | Résultat |
+|---|---|---|
+| Connexion valide | `200` | Token de session + données utilisateur |
+| Mot de passe incorrect | `401` | `{"code":"INVALID_EMAIL_OR_PASSWORD"}` |
+| Utilisateur inexistant | `401` | `{"code":"INVALID_EMAIL_OR_PASSWORD"}` |
+
+Note : Better Auth retourne le même message pour les deux cas d'erreur, ce qui est une bonne pratique de sécurité — on ne révèle pas si l'email existe ou non.
+
+**12. Création du système de protection des routes**
+
+*Problème rencontré :* La première approche utilisait `middleware.ts` à la racine du projet. Deux problèmes ont été identifiés :
+- Next.js 16 déprécie `middleware.ts` au profit de `proxy.ts`
+- Le middleware s'exécute dans l'**Edge Runtime**, un environnement léger qui ne supporte pas Prisma
+
+*Solution adoptée :*
+- Création d'un endpoint interne `src/app/api/auth/verify/route.ts` qui vérifie le token en base de données via Prisma
+- Création de `proxy.ts` à la racine qui appelle cet endpoint pour valider chaque requête entrante
+
+`proxy.ts` intercepte toutes les requêtes vers `/api/favoris/*`, `/api/avis/*` et `/api/admin/*`. Si le token est valide, il transmet le `userId` et le `role` de l'utilisateur aux Route Handlers via des headers personnalisés (`x-user-id`, `x-user-role`). Les routes `/api/auth/*` restent publiques.
+
+**13. Création de `src/lib/checkRole.ts`**
+Helper utilisé à l'intérieur des Route Handlers protégés pour vérifier le rôle de l'utilisateur. Il lit le header `x-user-role` injecté par le proxy et retourne une réponse `403 Forbidden` si le rôle est insuffisant. Utilisé principalement pour les routes `/api/admin/*` qui nécessitent le rôle `ADMIN`.
+
+**14. Tests Postman — Protection des routes**
+
+| Scénario | Status | Résultat |
+|---|---|---|
+| GET `/api/favoris` sans token | `401` | `{"error":"Authentication requise"}` |
+| GET `/api/favoris` avec token valide | `404` | Route non encore créée, proxy validé ✅ |
+| GET `/api/admin/piscines` sans token | `401` | `{"error":"Authentication requise"}` |
+| GET `/api/admin/piscines` token ADMIN | `404` | Route non encore créée, proxy validé ✅ |
+| GET `/api/admin/piscines` token USER | `404` | Vérification du rôle déléguée au Route Handler via `checkRole` |
+
+---
+
+**🧱 Difficultés rencontrées :**
+- **NextAuth → Better Auth** : la tentative initiale avec NextAuth v5 beta a mené à une migration complète vers Better Auth. Décision documentée et justifiée dans les choix techniques.
+- **Edge Runtime + Prisma** : le proxy ne peut pas utiliser Prisma directement. Résolu avec un endpoint de vérification intermédiaire.
+- **Next.js 16** : dépréciation de `middleware.ts` au profit de `proxy.ts`, découverte en cours de développement.
+
+---
+
+**➡️ Prochaine étape :**
+Étape 3 — Routes API complètes : implémentation des endpoints `GET /api/piscines` avec filtres, `POST/DELETE /api/favoris`, `POST /api/avis`, et routes admin protégées.
+
+---
+
+**📝 Pour le dossier RNCP :**
+- Justifier le choix de Better Auth vs NextAuth dans la section *Choix techniques* : stabilité, compatibilité App Router, successor officiel
+- Documenter l'architecture d'authentification : flux register → login → token → proxy → Route Handler
+- Mentionner la contrainte Edge Runtime comme exemple de problème technique résolu
