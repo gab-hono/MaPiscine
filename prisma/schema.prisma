@@ -17,7 +17,6 @@ enum PeriodeHoraire {
   VACANCES
 }
 
-// Modelo base requerido por Better Auth
 model user {
   id            String    @id
   name          String
@@ -27,21 +26,20 @@ model user {
   createdAt     DateTime
   updatedAt     DateTime
 
-  // Campos personalizados de Piscines de Paris
   mot_de_passe  String?
   pronoms       String?
   role          Role      @default(USER)
 
-  // Modelos requeridos por Better Auth
+  // Liaison Admin → Piscine (NULL si role=USER)
+  piscineId     Int?
+  piscine       Piscine?  @relation("AdminPiscine", fields: [piscineId], references: [id])
+
   sessions      session[]
   accounts      account[]
-
-  // Relaciones propias del proyecto
   favoris       Favori[]
   avis          Avis[]
 }
 
-// Requerido por Better Auth
 model session {
   id        String   @id
   expiresAt DateTime
@@ -54,7 +52,6 @@ model session {
   user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Requerido por Better Auth
 model account {
   id                    String    @id
   accountId             String
@@ -72,7 +69,6 @@ model account {
   updatedAt             DateTime
 }
 
-// Requerido por Better Auth
 model verification {
   id         String    @id
   identifier String
@@ -103,33 +99,28 @@ model Piscine {
   activites           String[]
   images_galerie      String[]
 
-  prix_entree_normal          Float?
-  prix_entree_reduit          Float?
-  prix_carnet_normal          Float?
-  prix_carnet_reduit          Float?
-  prix_abonnement_normal      Float?
-  prix_abonnement_reduit      Float?
-  prix_brevet_natation        Float?
+  prix_entree_normal     Float?
+  prix_entree_reduit     Float?
+  prix_carnet_normal     Float?
+  prix_carnet_reduit     Float?
+  prix_abonnement_normal Float?
+  prix_abonnement_reduit Float?
+  prix_brevet_natation   Float?
 
-  seche_cheveux               Boolean @default(false)
-  distributeur_equipements    Boolean @default(false)
-  douche_pmr                  Boolean @default(false)
-  douches_collectives_mixtes  Boolean @default(false)
-  douches_individuelles       Boolean @default(false)
-  vestiaires_mixtes           Boolean @default(false)
-  casiers                     Boolean @default(false)
-  cabine_pmr                  Boolean @default(false)
-  parking_velos               Boolean @default(false)
-  toilettes                   Boolean @default(true)
-  wifi                        Boolean @default(false)
-  table_a_langer              Boolean @default(false)
-  distributeur_boisson        Boolean @default(false)
-  defibrillateur              Boolean @default(false)
-  admission_animaux           Boolean @default(false)
+  seche_cheveux            Boolean @default(false)
+  distributeur_equipements Boolean @default(false)
+  casiers                  Boolean @default(false)
+  vestiaires_mixtes        Boolean @default(false)
+  cabines_individuelles    Boolean @default(false)
+  douches_individuelles    Boolean @default(false)
+  douches_collectives      Boolean @default(false)
+  cabine_pmr               Boolean @default(false)
+  distributeur_boisson     Boolean @default(false)
 
   last_updated_at     DateTime @updatedAt
   created_at          DateTime @default(now())
 
+  admin               user[]   @relation("AdminPiscine")
   bassins             Bassin[]
   horaires_reguliers  HoraireRegulier[]
   horaires_exceptions HoraireException[]
@@ -138,45 +129,41 @@ model Piscine {
 }
 
 model Bassin {
-  id              Int     @id @default(autoincrement())
-  nom             String?
-  longueur        Float?
-  largeur         Float?
-  profondeur_min  Float?
-  profondeur_max  Float?
-  nb_couloirs     Int?
-  revetement      String?
-  traitement_eau  String?
-  temperature     Float?
-  lumiere         String?
-  piscineId       Int
+  id             Int     @id @default(autoincrement())
+  nom            String?
+  longueur       Float?
+  largeur        Float?
+  profondeur_min Float?
+  profondeur_max Float?
+  nb_couloirs    Int?
+  piscineId      Int
 
-  piscine         Piscine @relation(fields: [piscineId], references: [id])
+  piscine        Piscine @relation(fields: [piscineId], references: [id])
 }
 
 model HoraireRegulier {
-  id               Int            @id @default(autoincrement())
-  periode          PeriodeHoraire
-  jour             String
-  heure_ouverture  String
-  heure_fermeture  String
-  ferme            Boolean        @default(false)
-  piscineId        Int
+  id              Int            @id @default(autoincrement())
+  periode         PeriodeHoraire
+  jour            String
+  heure_ouverture String
+  heure_fermeture String
+  ferme           Boolean        @default(false)
+  piscineId       Int
 
-  piscine          Piscine        @relation(fields: [piscineId], references: [id])
+  piscine         Piscine        @relation(fields: [piscineId], references: [id])
 }
 
 model HoraireException {
-  id               Int      @id @default(autoincrement())
-  date_debut       DateTime
-  date_fin         DateTime
-  heure_ouverture  String?
-  heure_fermeture  String?
-  ferme            Boolean  @default(false)
-  motif            String?
-  piscineId        Int
+  id              Int      @id @default(autoincrement())
+  date_debut      DateTime
+  date_fin        DateTime
+  heure_ouverture String?
+  heure_fermeture String?
+  ferme           Boolean  @default(false)
+  motif           String?
+  piscineId       Int
 
-  piscine          Piscine  @relation(fields: [piscineId], references: [id])
+  piscine         Piscine  @relation(fields: [piscineId], references: [id])
 }
 
 model Favori {
@@ -193,14 +180,14 @@ model Favori {
 
 model Avis {
   id                        String   @id @default(cuid())
-  note_accessibilite        Int
-  commentaire_accessibilite String
-  note_accueil              Int
-  commentaire_accueil       String
-  note_bassin               Int
-  commentaire_bassin        String
-  note_vestiaires           Int
-  commentaire_vestiaires    String
+  note_accessibilite        Int?
+  commentaire_accessibilite String?
+  note_accueil              Int?
+  commentaire_accueil       String?
+  note_bassin               Int?
+  commentaire_bassin        String?
+  note_vestiaires           Int?
+  commentaire_vestiaires    String?
   created_at                DateTime @default(now())
   userId                    String
   piscineId                 Int
