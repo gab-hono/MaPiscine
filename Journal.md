@@ -234,3 +234,69 @@ Helper utilisé à l'intérieur des Route Handlers protégés pour vérifier le 
 - Justifier le choix de Better Auth vs NextAuth dans la section *Choix techniques* : stabilité, compatibilité App Router, successor officiel
 - Documenter l'architecture d'authentification : flux register → login → token → proxy → Route Handler
 - Mentionner la contrainte Edge Runtime comme exemple de problème technique résolu
+
+---
+
+##### 18 avril 2026
+
+###### Pause de conception — Remodélisation de la base de données (théorie)
+
+Avant de continuer le développement, une pause de conception a été décidée pour corriger les divergences entre le modèle documenté dans le dossier RNCP et le schéma Prisma réellement implémenté. Cette révision s'appuie sur une analyse des pages officielles des 42 piscines municipales parisiennes (paris.fr).
+
+**Décisions de remodélisation :**
+
+- **Horaires** : séparation confirmée en deux entités distinctes — `HoraireRegulier` (créneaux récurrents par période SCOLAIRE/VACANCES) et `HoraireException` (fermetures ou horaires ponctuels). Cette séparation permet à l'interface Admin d'afficher automatiquement les horaires corrects selon la date consultée.
+- **Liaison Admin ↔ Piscine** : ajout d'un champ `piscineId Int?` sur le modèle `user`. NULL si role=USER, obligatoire si role=ADMIN. Un compte Admin ne gère qu'une seule piscine (cardinalité 0,1 — 0,1).
+- **Bassin simplifié** : suppression des champs trop techniques (`revetement`, `traitement_eau`, `temperature`, `lumiere`). Maintien de `nom`, `longueur`, `largeur`, `profondeur_min`, `profondeur_max`, `nb_couloirs`.
+- **Vestiaires granulaires** : décomposition en 5 champs booléens distincts (`vestiaires_mixtes`, `cabines_individuelles`, `douches_individuelles`, `douches_collectives`, `cabine_pmr`) pour permettre des filtres de recherche précis, notamment utiles aux personnes queer, trans et non binaires.
+- **Équipements épurés** : suppression des champs peu pertinents (`toilettes`, `wifi`, `table_a_langer`, `defibrillateur`, `admission_animaux`, `douche_pmr`, `douches_collectives_mixtes`).
+- **Champs Avis optionnels** : les notes et commentaires passent en `Int?` / `String?` — au moins un critère doit être renseigné, validé côté serveur.
+- **Tarifs sur PISCINE** : grille tarifaire standardisée stockée directement sur la table `piscines` — suffisant pour la réalité municipale parisienne.
+
+La section « Synthèse de la modélisation des données » du dossier RNCP a été entièrement réécrite pour refléter ce modèle révisé, incluant les 7 entités MERISE, les 7 relations avec cardinalités, les tables MLD complètes et une note technique de correspondance MERISE ↔ Prisma.
+
+---
+
+###### Implémentation — Migration et seed complet
+
+**Mise à jour du schéma Prisma**
+
+Le fichier `prisma/schema.prisma` a été mis à jour pour refléter le modèle révisé :
+
+- Ajout de `piscineId Int?` sur `user` avec relation nommée `"AdminPiscine"`
+- Suppression des champs obsolètes sur `Piscine` : `douche_pmr`, `douches_collectives_mixtes`, `toilettes`, `wifi`, `table_a_langer`, `defibrillateur`, `admission_animaux`
+- Ajout des nouveaux champs vestiaires : `vestiaires_mixtes`, `cabines_individuelles`, `douches_individuelles`, `douches_collectives`, `cabine_pmr`
+- Suppression des champs techniques sur `Bassin` : `revetement`, `traitement_eau`, `temperature`, `lumiere`
+- Champs `Avis` rendus optionnels (`Int?` / `String?`)
+
+**Migration**
+
+```bash
+npx prisma migrate dev --name remodel_schema_complet
+npx prisma generate
+```
+
+Migration appliquée avec succès sur la base Neon.
+
+**Réécriture complète du seed**
+
+Le fichier `prisma/seed.ts` a été entièrement réécrit pour inclure les 42 piscines municipales parisiennes. Structure :
+
+- `deleteMany()` en cascade au début (ordre respectant les FK) pour garantir l'idempotence
+- 5 piscines avec données complètes et horaires précis (Berlioux, Marie-Marvingt, Jean Taris, Pontoise, Saint-Germain)
+- Helper `horairesMunicipaux()` typé avec `PeriodeHoraire` pour les 37 piscines restantes
+- Piscines avec horaires spécifiques (Catherine Lagatu, Roger Le Gall) avec leurs propres créneaux
+
+```bash
+npx tsx prisma/seed.ts
+```
+
+Seed exécuté avec succès. Vérification dans Prisma Studio : 42 piscines créées, bassins et horaires correctement rattachés.
+
+**Difficultés rencontrées :**
+- **Connexion Neon échouée** (`P1001` puis `P1000`) — URL `DATABASE_URL` mal formée dans `.env`. Résolu en récupérant la connection string complète depuis le dashboard Neon.
+- **Erreur TypeScript `PeriodeHoraire`** — le helper `horairesMunicipaux` retournait des objets dont `periode` était inféré comme `string`. Résolu en important `PeriodeHoraire` depuis `@prisma/client`, en créant un type local `HoraireInput`, et en typant explicitement les arrays d'horaires.
+
+---
+
+*Prochaine étape : Étape 3 — Routes API complètes*
