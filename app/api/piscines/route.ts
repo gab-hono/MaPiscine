@@ -2,21 +2,72 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 
-
-
-/* export async function GET() {
+export async function GET(request: Request) {
   try {
-    const piscines = await prisma.piscine.findMany({
-      include: {
-        bassins: true,
-        horaires_reguliers: true,
-      }
+    const { searchParams } = new URL(request.url)
+
+    //FILTERS
+    const arrondissement = searchParams.get('arrondissement')
+    const acces_pmr = searchParams.get('acces_pmr')
+    const queer_friendly = searchParams.get('queer_friendly')
+    const accepte_passe_paris = searchParams.get('accepte_passe_paris')
+    const vestiaires_mixtes = searchParams.get('vestiaires_mixtes')
+    const cabines_individuelles = searchParams.get('cabines_individuelles')
+    const douches_individuelles = searchParams.get('douches_individuelles')
+    const douches_collectives = searchParams.get('douches_collectives')
+    const cabine_pmr = searchParams.get('cabine_pmr')
+    const espace_solarium = searchParams.get('espace_solarium')
+    const is_open         = searchParams.get('is_open')
+
+    //DYNAMIC CONSTRUCTION OF "WHERE" (PRISMA)
+    const where: Record<string, unknown> = {}
+
+    if (arrondissement) where.arrondissement = Number(arrondissement);
+    if (acces_pmr === 'true') where.acces_pmr = true;
+    if (queer_friendly === 'true') where.queer_friendly = true;
+    if (accepte_passe_paris === 'true') where.accepte_passe_paris = true;
+    if (vestiaires_mixtes === 'true') where.vestiaires_mixtes = true;
+    if (cabines_individuelles === 'true') where.cabines_individuelles = true;
+    if (douches_collectives === 'true') where.douches_collectives = true;
+    if (douches_individuelles === 'true') where.douches_individuelles = true;
+    if (cabine_pmr === 'true') where.cabine_pmr = true;
+    if (espace_solarium === 'true') where.espace_solarium = true
+    if (is_open === 'true')        where.is_open         = true
+
+    //CREATION OF PAGES
+    const page = Number(searchParams.get('page') ?? 1)
+    const limit = Number(searchParams.get('limit') ?? 50);
+    const skip = (page -1) * limit;
+
+    //QUERY
+    const [piscines, total] = await Promise.all([
+      prisma.piscine.findMany({
+        where,
+        include: {
+          bassins: true,
+          horaires_reguliers: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { arrondissement: 'asc' },
+      }),
+      prisma.piscine.count({ where }),
+    ])
+
+    return NextResponse.json({
+      data: piscines,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
     })
-    return NextResponse.json(piscines)
-  } catch (error) {
+  }
+  catch (error) {
     return NextResponse.json(
       { error: 'Erreur serveur' },
       { status: 500 }
     )
   }
-} */
+}
