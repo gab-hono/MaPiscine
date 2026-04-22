@@ -1,7 +1,10 @@
+//src/app/api/piscines/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 
-export async function GET() {
+
+
+/* export async function GET() {
   try {
     const piscines = await prisma.piscine.findMany({
       include: {
@@ -16,4 +19,4 @@ export async function GET() {
       { status: 500 }
     )
   }
-}
+} */
