@@ -1,3 +1,4 @@
+// src/app/api/piscines/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
 
@@ -22,6 +23,12 @@ export async function GET(
         bassins: true,
         horaires_reguliers: true,
         horaires_exceptions: true,
+        _count: {
+          select: {
+            avis: true,
+            favoris: true,
+          }
+        }
       }
     })
 
@@ -32,7 +39,8 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(piscine)
+    return NextResponse.json({ data: piscine })
+
   } catch (error) {
     return NextResponse.json(
       { error: 'Erreur serveur' },
