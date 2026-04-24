@@ -1,10 +1,5 @@
 //app/api/favoris/route.ts
 /* Generar ruta POST de un favori */
-/* 
-- [X]  Crear src/app/api/favoris/route.ts
-- [X]  Proteger la ruta: verificar sesión activa (→ 401 si no)
-- [ ]  Verificar que el favori no existe ya (→ 409).
-- [ ]  Crear vinculando userId del token y piscineId del body. */
 
 import { prisma } from "@/src/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -34,6 +29,19 @@ export async function POST(req : NextRequest) {
     }
 
     //We verify the favorite doesn't already exists
-    
+    const existingFav = await prisma.favori.findUnique({ where: {
+        userId_piscineId: { userId, piscineId }
+    }})
 
+    //If a favorite already exist, throw error on can't duplicate
+    if(existingFav) {
+        return NextResponse.json({ error: "Ce favori existe déjà. Impossible de dupliquer"}, { status: 409 })
+    }
+
+    //creation of the favorite
+    const favori = await prisma.favori.create({
+        data: { userId, piscineId }
+    })
+
+    return NextResponse.json({ data: favori }, { status: 201 })
 }
