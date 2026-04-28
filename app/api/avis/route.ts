@@ -16,9 +16,18 @@ export async function POST(req: NextRequest) {
             }, { status: 401 })
         };
 
-        
+        /* Verificar que al menos uno de los criterios se completa */
 
-    } catch {
+        /* Verificar que la piscina existe */
 
+        /* Verificar que el usuario no ha dejado ya un avis de esta piscina */
+
+        /* Crear un avis que vincule el userId con piscineId */
+
+
+
+    } catch(error) {
+        console.error('Erreur POST api/avis:', error)
+        return NextResponse.json({ error: "Erreur serveur"}, { status: 500 });
     }
 }
