@@ -48,8 +48,7 @@ export async function POST(req : NextRequest) {
         return NextResponse.json({ data: favori }, { status: 201 })
 
     } catch(error) {
-        return NextResponse.json({ 
-            error: ("Erreur serveur")
-        }, { status: 500 })
-    }
+        console.error('Erreur POST /api/favoris:', error)
+        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+        }
 }
