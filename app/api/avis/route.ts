@@ -89,3 +89,51 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Erreur serveur"}, { status: 500 });
     }
 }
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const raw = searchParams.get('piscineId')
+
+    // Validar que se envía y que es numérico
+    if (!raw) {
+      return NextResponse.json({ error: "piscineId manquant" }, { status: 400 })
+    }
+
+    const piscineId = parseInt(raw)
+    if (isNaN(piscineId)) {
+      return NextResponse.json({ error: "piscineId invalide" }, { status: 400 })
+    }
+
+    // Verificar que la piscine existe
+    const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
+    if (!piscine) {
+      return NextResponse.json({ error: "Piscine non trouvée" }, { status: 404 })
+    }
+
+    // Devolver los avis sin exponer userId
+    const avis = await prisma.avis.findMany({
+      where: { piscineId },
+      select: {
+        id: true,
+        note_accessibilite: true,
+        commentaire_accessibilite: true,
+        note_accueil: true,
+        commentaire_accueil: true,
+        note_bassin: true,
+        commentaire_bassin: true,
+        note_vestiaires: true,
+        commentaire_vestiaires: true,
+        created_at: true,
+        piscineId: true,
+        // userId excluido intencionalmente
+      }
+    })
+
+    return NextResponse.json({ data: avis }, { status: 200 })
+
+  } catch (error) {
+    console.error('Erreur GET /api/avis:', error)
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+  }
+}
