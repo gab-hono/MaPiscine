@@ -29,10 +29,14 @@ export async function POST(req: NextRequest) {
             comVestiaire } = body;
 
         /* Verificar que la piscina existe */
-        const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
-        if(!piscine || typeof piscineId !== "number") {
-            return NextResponse.json({ error: "Piscine non trouvée ou inexistante"}, { status: 404 })
+        if (!piscineId || typeof piscineId !== "number") {
+            return NextResponse.json({ error: "Piscine ID invalide ou inexistant" }, { status: 400 })
         }
+
+        const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
+        if (!piscine) {
+            return NextResponse.json({ error: "Piscine non trouvée" }, { status: 404 })
+        };
 
         /* Verificar que el usuario no ha dejado ya un avis de esta piscina */
         const existingAvis = await prisma.avis.findUnique({ where: {
@@ -44,23 +48,18 @@ export async function POST(req: NextRequest) {
         }
 
         /* Verificar que al menos uno de los criterios se completa */
-        const oneChamp =
-        noteAccessibilite !== undefined ||
-        comAccessibilite !== undefined ||
-        noteAccueil !== undefined ||
-        comAccueil !== undefined ||
-        noteBassin !== undefined ||
-        comBassin !== undefined ||
-        noteVestiaire !== undefined ||
-        comVestiaire !== undefined
+        const allNotes =
+        noteAccessibilite !== undefined &&
+        noteAccueil !== undefined &&
+        noteBassin !== undefined &&
+        noteVestiaire !== undefined
 
-        if(!oneChamp) {
-            return NextResponse.json({ error: "Il faut remplir au moins un champ d'évaluation" }, { status : 400 })
+        if(!allNotes) {
+            return NextResponse.json({ error: "Il faut mettre des notes sur tous les champs, les commentaires sont optionnels" }, { status : 400 })
         }
 
         /* Verificar que las notas estén entre 0 y 5 */
-        const notes = [noteAccessibilite, noteAccueil, noteBassin, noteVestiaire]
-        .filter(n => n !== undefined)
+        const notes = [noteAccessibilite, noteAccueil, noteBassin, noteVestiaire];
 
         const notesValides = notes.every(n => typeof n === 'number' && n >= 0 && n <= 5);
 
