@@ -52,3 +52,25 @@ export async function POST(req : NextRequest) {
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
         }
 }
+
+export async function GET(req: NextRequest) {
+    try {
+        const userId = req.headers.get("x-user-id")
+        
+        if(!userId) {
+            return NextResponse.json({
+                error: "Non authentifié"
+            }, { status: 401})
+        }
+
+        const favoris = await prisma.favori.findMany({ 
+            where: { userId: userId },
+            include: { piscine: true }
+        });
+        return NextResponse.json({ data: favoris }, { status: 200 })
+        
+    } catch(error) {
+        console.error(error)
+        return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    };
+}
