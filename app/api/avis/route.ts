@@ -93,17 +93,17 @@ export async function POST(req: NextRequest) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const raw = searchParams.get('piscineId')
+    const id = searchParams.get('piscineId')
 
     // Validar que se envía y que es numérico
-    if (!raw) {
+    if (!id) {
       return NextResponse.json({ error: "piscineId manquant" }, { status: 400 })
     }
 
-    const piscineId = parseInt(raw)
+    const piscineId = parseInt(id)
     if (isNaN(piscineId)) {
       return NextResponse.json({ error: "piscineId invalide" }, { status: 400 })
-    }
+    };
 
     // Verificar que la piscine existe
     const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
