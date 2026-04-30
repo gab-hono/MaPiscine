@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function proxy(req: NextRequest) {
+  if (req.method === 'GET' && req.nextUrl.pathname === '/api/avis') {
+    return NextResponse.next()
+  }
+  
   const token = req.headers.get("authorization")?.replace("Bearer ", "");
 
   if (!token) {
