@@ -4,7 +4,6 @@ import { prisma } from "@/src/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 /* Generar ruta POST para un avis (puede existir sólo si un usuario esta autentificado) */
-
 export async function POST(req: NextRequest) {
 
     try {
@@ -90,6 +89,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
+/* Función GET pública para que cualquier persona pueda consultar los avis de una piscina */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
