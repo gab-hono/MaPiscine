@@ -43,7 +43,10 @@ export async function DELETE(
 }
 
 /* función PATCH para que un user pueda modificar su propio avis */
-export async function PATCH(req: Request) {
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+    ) {
     try{
         /* Protección de ruta */
         const userId = req.headers.get("x-user-id")
@@ -52,7 +55,11 @@ export async function PATCH(req: Request) {
         };
 
         /* Validar que el id del avis existe en la bdd */
-
+        const { id } = await params;
+        const avis = await prisma.avis.findUnique({ where: { id }})
+        if(!avis){
+            return NextResponse.json({ error: "Avis non trouvé ou inexistant dans la base des données" }, { status: 404 })
+        };
 
         /* Verificar que el avis pertenece al user que hace la req */
 
