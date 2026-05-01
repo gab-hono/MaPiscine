@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Cet utilisateur a déjà laissé un avis sur cette piscine" }, { status: 409 })
         }
 
-        /* Verificar que al menos uno de los criterios se completa */
+        /* Verificar que todas las notas se envían */
         const allNotes =
         noteAccessibilite !== undefined &&
         noteAccueil !== undefined &&

@@ -62,17 +62,73 @@ export async function PATCH(
         };
 
         /* Verificar que el avis pertenece al user que hace la req */
-
-
+        if(avis.userId !== userId){
+            return NextResponse.json({ error: "Non authorisé" }, { status: 403 })
+        };
+        
         /* Validar que al menos una nota o comentario se envía en el body */
+        const body = await req.json();
+        const { noteAccessibilite,
+                comAccessibilite,
+                noteAccueil,
+                comAccueil,
+                noteBassin,
+                comBassin,
+                noteVestiaire,
+                comVestiaire } = body
+        
+        const noChange =
+            noteAccessibilite === undefined &&
+            comAccessibilite === undefined &&
+            noteAccueil === undefined &&
+            comAccueil === undefined &&
+            noteBassin === undefined &&
+            comBassin === undefined &&
+            noteVestiaire === undefined &&
+            comVestiaire === undefined
 
-
+        if(noChange){
+            return NextResponse.json({ error: "Envoyer au moins un changement" }, { status: 400 })
+        };
+        
         /* Validar que las notas están entre 0 y 5 */
+        const notes = [noteAccessibilite, noteAccueil, noteBassin, noteVestiaire];
 
+        const notesValides = notes
+            .filter(n => n !== undefined)
+            .every(n => typeof n === 'number' && n >= 0 && n <= 5)
+        
+        if(!notesValides) {
+            return NextResponse.json({ error: "Les notes doivent être comprises entre 0 et 5"}, { status: 400 })
+        };
 
         /* Actualizar SOLO los campos modificados */
+        const data: {
+            note_accessibilite?: number
+            commentaire_accessibilite?: string
+            note_accueil?: number
+            commentaire_accueil?: string
+            note_bassin?: number
+            commentaire_bassin?: string
+            note_vestiaires?: number
+            commentaire_vestiaires?: string
+        } = {}
 
+        if (noteAccessibilite !== undefined) data.note_accessibilite = noteAccessibilite
+        if (comAccessibilite !== undefined) data.commentaire_accessibilite = comAccessibilite
+        if (noteAccueil !== undefined) data.note_accueil = noteAccueil
+        if (comAccueil !== undefined) data.commentaire_accueil = comAccueil
+        if (noteBassin !== undefined) data.note_bassin = noteBassin
+        if (comBassin !== undefined) data.commentaire_bassin = comBassin
+        if (noteVestiaire !== undefined) data.note_vestiaires = noteVestiaire
+        if (comVestiaire !== undefined) data.commentaire_vestiaires = comVestiaire
 
+        const newData = await prisma.avis.update({
+            where: { id: avis.id },
+            data
+        })
+
+        return NextResponse.json({ data: newData }, { status: 200 })
     } catch(error){
         console.error(error)
         return NextResponse.json({ error: "Erreur serveur"}, { status: 500 })
