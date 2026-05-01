@@ -4,7 +4,6 @@ import { prisma } from "@/src/lib/prisma";
 import { NextResponse } from "next/server"
 
 /* Creación de ruta con método DELETE para borrar un avis */
-
 export async function DELETE(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
@@ -40,5 +39,35 @@ export async function DELETE(
     } catch(error) {
         console.error(error)
         return NextResponse.json({ error: "Erreur serveur" }, { status: 500 })
+    }
+}
+
+/* función PATCH para que un user pueda modificar su propio avis */
+export async function PATCH(req: Request) {
+    try{
+        /* Protección de ruta */
+        const userId = req.headers.get("x-user-id")
+        if(!userId){
+            return NextResponse.json({ error: "Non authentifié.e" }, { status: 401 })
+        };
+
+        /* Validar que el id del avis existe en la bdd */
+
+
+        /* Verificar que el avis pertenece al user que hace la req */
+
+
+        /* Validar que al menos una nota o comentario se envía en el body */
+
+
+        /* Validar que las notas están entre 0 y 5 */
+
+
+        /* Actualizar SOLO los campos modificados */
+
+
+    } catch(error){
+        console.error(error)
+        return NextResponse.json({ error: "Erreur serveur"}, { status: 500 })
     }
 }
