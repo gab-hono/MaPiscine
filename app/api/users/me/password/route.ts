@@ -1,4 +1,4 @@
-//app/api/users/me/password.route.ts
+//app/api/users/me/password/route.ts
 
 import { prisma } from "@/src/lib/prisma";
 import bcrypt from "bcryptjs";
