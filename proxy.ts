@@ -47,5 +47,6 @@ export const config = {
     "/api/favoris/:path*",
     "/api/avis/:path*",
     "/api/admin/:path*",
-  ],
+    "/api/users/:path*",
+  ]
 };
