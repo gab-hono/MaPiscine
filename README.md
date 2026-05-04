@@ -1,29 +1,18 @@
-# 🏊 Piscines de Paris
+# 🏊 À la Piscine
 
 Application web de centralisation et d'accessibilité des informations sur les piscines municipales parisiennes, avec une dimension inclusive forte.
 
-> Projet de fin de formation — Titre RNCP niveau 6 · Développeur·euse web full stack · Ada Tech School
-
----
-
-## 📋 Table des matières
-
-- [À propos du projet](#-à-propos-du-projet)
-- [Fonctionnalités](#-fonctionnalités)
-- [Stack technique](#-stack-technique)
-- [Architecture](#-architecture)
-- [Structure du projet](#-structure-du-projet)
-- [Déploiement](#-déploiement)
+> Projet de fin de formation — Titre RNCP niveau 6 · Concepteur·rice Développeur·euse d'Applications · Ada Tech School · 2025–2026
 
 ---
 
 ## 🌊 À propos du projet
 
-**Piscines de Paris** répond à un double constat : les informations sur les piscines municipales parisiennes sont dispersées et peu accessibles, et l'accueil des personnes trans et non binaires y est souvent insuffisamment adapté.
+**À la Piscine** répond à un double constat : les informations sur les piscines municipales parisiennes sont dispersées et peu accessibles, et l'accueil des personnes trans et non binaires y est souvent insuffisamment documenté.
 
 L'application poursuit trois objectifs :
 
-1. **Centraliser** les informations pratiques de chaque piscine (horaires, tarifs, équipements, accessibilité, état des bassins et vestiaires).
+1. **Centraliser** les informations pratiques de chaque piscine (horaires, tarifs, équipements, accessibilité, bassins et vestiaires).
 2. **Inclure** via un filtre *Queer Friendly* identifiant les piscines ayant suivi une formation spécifique avec une association partenaire.
 3. **Fiabiliser les données** en impliquant directement les agent·es des piscines dans la mise à jour de leur établissement via un rôle Admin dédié.
 
@@ -32,88 +21,164 @@ L'application poursuit trois objectifs :
 ## ✨ Fonctionnalités
 
 ### Tous les profils (non authentifié·e)
-- Liste et carte interactive des piscines parisiennes (OpenStreetMap / Leaflet.js)
-- Recherche textuelle et filtres multicritères : accessibilité PMR, label *Queer Friendly*, statut ouvert/fermé, type de bassin…
-- Fiches détaillées : infos pratiques, galerie d'images, notes moyennes par critère
-- Guide pédagogique pour les personnes débutantes (tarifs, équipement, règles d'usage)
-- Page *À propos*
+
+* Liste et carte interactive des 42 piscines parisiennes (OpenStreetMap / Leaflet.js)
+* Filtres multicritères : accessibilité PMR, label *Queer Friendly*, Passe Paris, statut ouvert/fermé, type de vestiaires, solarium…
+* Fiches détaillées : infos pratiques, horaires, bassins, avis des utilisateurs
+* Consultation des avis sans exposition des données des auteurs
 
 ### Utilisateur·ice authentifié·e
-- Sauvegarde de piscines en favoris
-- Soumission d'avis notés par critère (accessibilité, accueil, état du bassin, état des vestiaires)
-- Consultation et suppression de ses propres avis
-- Gestion du profil (nom d'utilisateur, pronoms, email, mot de passe)
+
+* Sauvegarde de piscines en favoris (ajout, consultation, suppression)
+* Soumission d'avis notés par critère (accessibilité, accueil, bassin, vestiaires) avec commentaires optionnels
+* Modification et suppression de ses propres avis
+* Gestion du profil (nom, pronoms, image)
+* Changement de mot de passe
 
 ### Administrateur·ice (agent·e de piscine)
-- Tableau de bord dédié accessible après authentification
-- Mise à jour des informations de sa piscine (horaires, tarifs, équipements, label *Queer Friendly*…)
-- Suivi de la date de dernière mise à jour
-- Consultation des avis laissés par les utilisateur·ices
+
+* Tableau de bord dédié accessible après authentification
+* Consultation du détail complet de sa piscine assignée et de tous les avis reçus
+* Mise à jour des champs temps réel : `queer_friendly`, `acces_pmr`, `is_open`, `espace_solarium`
+* Accès strictement limité à la piscine assignée
 
 ---
 
 ## 🛠 Stack technique
 
 | Couche | Technologie |
-|---|---|
-| **Frontend** | Next.js (App Router) · Tailwind CSS · Leaflet.js |
-| **Backend** | Prisma ORM · JWT · bcrypt |
-| **Base de données** | PostgreSQL (Neon en production) |
-| **Déploiement** | Vercel (frontend) · Railway (backend) · Neon (BDD) · Cloudinary (images) |
+| --- | --- |
+| **Framework** | Next.js 16.2.1 (App Router) |
+| **Langage** | TypeScript |
+| **Base de données** | PostgreSQL · Neon (serverless) |
+| **ORM** | Prisma 6.12.0 |
+| **Authentification** | Better Auth v1.6.2 |
+| **Styling** | Tailwind CSS v4 |
+| **Carte** | Leaflet.js |
+| **Déploiement** | Vercel · Neon · Cloudinary |
 
 ---
 
 ## 🏗 Architecture
 
-L'application suit une architecture **MVC monolithique client-serveur à trois couches** :
+L'application suit une architecture **monolithique Next.js full-stack** avec App Router :
 
 ```
 ┌─────────────────────────────────────────────┐
-│              Frontend (Next.js)             │  ← Vercel
-│  Pages · Composants · Appels API fetch      │
+│         Frontend (Next.js App Router)       │  ← Vercel
+│  Pages · Composants · Appels fetch internes │
 └─────────────────────┬───────────────────────┘
-                      │ HTTP / REST
+                      │
 ┌─────────────────────▼───────────────────────┐
-│              Backend (Express.js)           │  ← Railway
-│  Routes · Contrôleurs · Middleware Auth     │
-│  Middleware Admin (rôle + id_piscine)       │
+│           proxy.ts (Middleware Auth)        │
+│  Vérifie le token Bearer → injecte          │
+│  x-user-id et x-user-role dans les headers  │
+└─────────────────────┬───────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────┐
+│         Route Handlers (src/app/api/)       │
+│  REST API · Logique métier · Guards HTTP    │
 └─────────────────────┬───────────────────────┘
                       │ Prisma ORM
 ┌─────────────────────▼───────────────────────┐
-│           Base de données (PostgreSQL)      │  ← Neon
-│  Tables : piscines · users · avis           │
-│           favoris · horaires · équipements  │
+│        Base de données (PostgreSQL)         │  ← Neon
+│  piscine · user · avis · favori             │
+│  bassin · horaire_regulier · account        │
 └─────────────────────────────────────────────┘
 ```
 
-### Sécurité des routes Admin
+### Sécurité des routes
 
-Chaque compte Admin est lié à un `id_piscine` unique. Un middleware côté serveur vérifie à la fois le **rôle** et l'**id_piscine** avant toute modification, garantissant qu'un Admin ne peut mettre à jour que son propre établissement.
+Le fichier `proxy.ts` intercepte toutes les requêtes vers `/api/favoris/*`, `/api/avis/*`, `/api/admin/*` et `/api/users/*`. Il vérifie le token Bearer via `/api/auth/verify` et injecte le `userId` et le `role` dans les headers de la requête avant de la transmettre au Route Handler.
+
+Les routes admin vérifient en plus que le `piscineId` de la piscine demandée correspond à celui assigné au compte admin — un admin ne peut accéder qu'à son propre établissement.
+
+---
+
+## 📡 Endpoints API
+
+### Publics (sans authentification)
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `GET` | `/api/piscines` | Liste paginée avec filtres optionnels |
+| `GET` | `/api/piscines/:id` | Détail d'une piscine |
+| `GET` | `/api/avis?piscineId=:id` | Avis d'une piscine (sans userId) |
+
+### Authentifiés (token Bearer requis)
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `GET` | `/api/users/me` | Profil de l'utilisateur connecté |
+| `PATCH` | `/api/users/me` | Mise à jour du profil |
+| `PATCH` | `/api/users/me/password` | Changement de mot de passe |
+| `POST` | `/api/favoris` | Ajouter un favori |
+| `GET` | `/api/favoris` | Consulter ses favoris |
+| `DELETE` | `/api/favoris/:id` | Supprimer un favori |
+| `POST` | `/api/avis` | Créer un avis |
+| `PATCH` | `/api/avis/:id` | Modifier son avis |
+| `DELETE` | `/api/avis/:id` | Supprimer son avis |
+
+### Admin (rôle ADMIN + piscine assignée requis)
+
+| Méthode | Route | Description |
+| --- | --- | --- |
+| `GET` | `/api/admin/piscines/:id` | Détail complet avec tous les avis |
+| `PATCH` | `/api/admin/piscines/:id` | Mise à jour des champs temps réel |
 
 ---
 
 ## 📁 Structure du projet
 
 ```
-piscines-de-paris/
-├── frontend/                  # Application Next.js
-│   ├── app/                   # App Router (pages et layouts)
-│   ├── components/            # Composants réutilisables
-│   ├── lib/                   # Utilitaires et appels API
-│   └── public/                # Assets statiques
-│
-├── backend/                   # Serveur Express.js
-│   ├── prisma/
-│   │   ├── schema.prisma      # Schéma de la base de données
-│   │   └── migrations/        # Historique des migrations
-│   ├── src/
-│   │   ├── controllers/       # Logique métier
-│   │   ├── routes/            # Définition des endpoints
-│   │   ├── middlewares/       # Auth, Admin, gestion d'erreurs
-│   │   └── index.js           # Point d'entrée Express
-│   └── .env
-│
-└── README.md
+piscines-paris/
+├── app/                        # Pages et layouts (App Router)
+├── src/
+│   ├── app/
+│   │   └── api/                # Route Handlers
+│   │       ├── piscines/
+│   │       ├── avis/
+│   │       ├── favoris/
+│   │       ├── users/
+│   │       └── admin/
+│   └── lib/
+│       └── prisma.ts           # Client Prisma
+├── prisma/
+│   ├── schema.prisma           # Schéma de la base de données
+│   ├── seed.ts                 # Données initiales (42 piscines)
+│   └── migrations/
+├── proxy.ts                    # Middleware d'authentification
+├── .env                        # Variables d'environnement
+└── package.json
+```
+
+---
+
+## 🚀 Installation et lancement
+
+```bash
+# Cloner le repo
+git clone https://github.com/gab-hono/piscines-paris.git
+cd piscines-paris
+
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env
+# Renseigner DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL
+
+# Générer le client Prisma
+npx prisma generate
+
+# Appliquer les migrations
+npx prisma migrate deploy
+
+# Peupler la base de données
+npm run seed
+
+# Lancer le serveur de développement
+npm run dev
 ```
 
 ---
@@ -121,9 +186,8 @@ piscines-de-paris/
 ## ☁️ Déploiement
 
 | Service | Plateforme | Usage |
-|---|---|---|
-| Frontend | [Vercel](https://vercel.com) | Déploiement automatique depuis `main` |
-| Backend | [Railway](https://railway.app) | Serveur Node.js / Express |
+| --- | --- | --- |
+| Application | [Vercel](https://vercel.com) | Déploiement automatique depuis `master` |
 | Base de données | [Neon](https://neon.tech) | PostgreSQL serverless |
 | Images | [Cloudinary](https://cloudinary.com) | Stockage et optimisation des photos |
 
