@@ -19,3 +19,21 @@ const variantClasses: Record<NonNullable<BadgeProps["variant"]>, string> = {
     default: "bg-gray-100 text-gray-700 border border-gray-200",
 }
 
+const sizeClasses: Record<NonNullable<BadgeProps["size"]>, string> = {
+    sm: "text-xs px-2 py-0.5",
+    md: "text-sm px-2.5 py-1",
+}
+
+export function Badge({ label, variant = "default", size = "sm" }: BadgeProps) {
+    return(
+        <span
+        className={`
+            inline-flex items-center rounded-full dont-medium
+            ${variantClasses[variant]}
+            ${sizeClasses[size]}
+            `}
+        >
+            {label}
+        </span>
+    )
+}
