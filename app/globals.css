@@ -1,26 +1,87 @@
+/* app/globals.css */
+
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------
+   CHARTE GRAPHIQUE — Piscines de Paris
+   Variables CSS utilisées dans tout le projet via Tailwind
+--------------------------------------------------------------- */
+
 :root {
+  /* Couleurs primaires (palette aquatique) */
+  --bleu-profond: #0D4A73;
+  --bleu-moyen: #1A6EA8;
+  --bleu-clair: #4A9BC8;
+  --bleu-pale: #D6E8F5;
+  --bleu-tres-pale: #E8F4FC;
+
+  /* Couleurs secondaires (badges et états) */
+  --vert: #1D7A4E;       /* Ouvert, actif */
+  --rouge: #C62828;      /* Fermé, alerte */
+  --violet: #6A1B9A;     /* Queer Friendly */
+  --orange: #E07B20;     /* Notes / étoiles */
+  --jaune: #F9EC3A;      /* Étoile vide */
+
+  /* Couleurs UI générales */
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: var(--bleu-tres-pale);
+  --foreground: #1a1a2e;
+  --muted: #6b7280;
+  --border: #d1dbe8;
 }
+
+/* ---------------------------------------------------------------
+   THÈME TAILWIND v4
+   Enregistrement des variables comme tokens Tailwind
+--------------------------------------------------------------- */
 
 @theme inline {
+  /* Typographie */
+  --font-sans: var(--font-montserrat);
+
+  /* Couleurs custom accessibles via bg-*, text-*, border-* */
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+
+  --color-bleu-profond: var(--bleu-profond);
+  --color-bleu-moyen: var(--bleu-moyen);
+  --color-bleu-clair: var(--bleu-clair);
+  --color-bleu-pale: var(--bleu-pale);
+  --color-bleu-tres-pale: var(--bleu-tres-pale);
+
+  --color-vert: var(--vert);
+  --color-rouge: var(--rouge);
+  --color-violet: var(--violet);
+  --color-orange: var(--orange);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ---------------------------------------------------------------
+   BASE
+--------------------------------------------------------------- */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-montserrat), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------
+   LEAFLET — règles CSS obligatoires pour le rendu de la carte
+   (Leaflet accède à window, donc importé uniquement côté client)
+--------------------------------------------------------------- */
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* Correction z-index des popups Leaflet (sous la navbar) */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10;
 }
