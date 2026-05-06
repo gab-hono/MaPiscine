@@ -1,0 +1,1 @@
+//./components/ui/EmptyState.tsx <- Estado vacío (sin resultados)

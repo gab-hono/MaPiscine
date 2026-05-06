@@ -1,0 +1,1 @@
+//./components/piscines/PiscineList.tsx <- Grid de trajetas

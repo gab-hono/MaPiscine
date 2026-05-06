@@ -1,0 +1,1 @@
+//./components/piscines/PiscineMap.tsx <- Mapa Leaflet (Client Component)

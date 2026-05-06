@@ -1,0 +1,1 @@
+//./components/piscines/PiscineListPage.tsx <- Orquestador principal (Client Component)

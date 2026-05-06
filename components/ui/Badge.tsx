@@ -1,0 +1,1 @@
+//./components/ui/Badge.tsx <- Badge reutilizable (PMR, Queer Friendly...)

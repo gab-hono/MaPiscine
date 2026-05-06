@@ -1,0 +1,1 @@
+//./components/piscines/PiscineFiltres.tsx <- Panel de filtros (Client Component)

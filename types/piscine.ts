@@ -1,0 +1,1 @@
+//./types/piscine.ts <- Tipos TypeScript para la API

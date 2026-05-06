@@ -1,0 +1,1 @@
+//./components/ui/Pagination.tsx <- Controles de paginación

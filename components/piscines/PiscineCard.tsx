@@ -1,0 +1,1 @@
+//./components/piscines/PiscineCard.tsx <- Tarjeta de una piscina
