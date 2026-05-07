@@ -185,7 +185,6 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           onChange={(v) => onMettreAJour("longueur_bassin", v ? 50 : undefined)}
         />
       </SectionFiltres>
-
     </div>
   )
 }
