@@ -21,7 +21,7 @@ const PiscineMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-full min-h-[500px] bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
+      <div className="h-full min-h-125 bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
         <LoadingSpinner message="Chargement de la carte..." />
       </div>
     ),
@@ -114,9 +114,9 @@ export function PiscineListPage() {
 
           {/* Mode carte — monté seulement quand l'utilisateur clique sur Carte */}
           {vue === "carte" && (
-            <div className="h-[600px]">
+            <div className="h-150">
               {loading ? (
-                <div className="min-h-[500px] bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
+                <div className="min-h-125 bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
                   <LoadingSpinner message="Chargement des piscines..." />
                 </div>
               ) : (
