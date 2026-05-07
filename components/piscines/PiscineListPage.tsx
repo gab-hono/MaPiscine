@@ -1,17 +1,32 @@
 // components/piscines/PiscineListPage.tsx
 // Orchestrateur client — gère l'état global (filtres, pagination, toggle vue)
-// C'est le seul composant qui utilise usePiscines — les enfants reçoivent des props
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { usePiscines } from "@/hooks/usePiscines"
 import { PiscineFiltres } from "@/components/piscines/PiscineFiltres"
 import { PiscineList } from "@/components/piscines/PiscineList"
 import { Pagination } from "@/components/ui/Pagination"
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 
-// Le mapa Leaflet sera chargé dynamiquement (ssr: false) — à implémenter dans PiscineMap
-// import dynamic from "next/dynamic"
-// const PiscineMap = dynamic(() => import("@/components/piscines/PiscineMap"), { ssr: false })
+// -----------------------------------------------------------------
+// Dynamic import de Leaflet — ssr: false obligatoire
+// Leaflet accède à window, qui n'existe pas côté serveur
+// Sans ça : "window is not defined" au build
+// -----------------------------------------------------------------
+
+const PiscineMap = dynamic(
+  () => import("@/components/piscines/PiscineMap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full min-h-[500px] bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
+        <LoadingSpinner message="Chargement de la carte..." />
+      </div>
+    ),
+  }
+)
 
 type VueMode = "liste" | "carte"
 
@@ -40,7 +55,6 @@ export function PiscineListPage() {
             Piscines de Paris
           </h1>
 
-          {/* Toggle liste / carte */}
           <div className="flex rounded-xl border border-border overflow-hidden">
             <button
               onClick={() => setVue("liste")}
@@ -68,7 +82,6 @@ export function PiscineListPage() {
         {/* Layout principal : filtres + contenu */}
         <div className="flex flex-col lg:flex-row gap-6">
 
-          {/* Panneau filtres — fixe à gauche sur desktop, plein largeur sur mobile */}
           <aside className="lg:w-64 shrink-0">
             <PiscineFiltres
               filtres={filtres}
@@ -77,18 +90,16 @@ export function PiscineListPage() {
             />
           </aside>
 
-          {/* Zone de contenu principale */}
           <main className="flex-1 flex flex-col gap-4">
 
-            {/* Erreur API */}
             {erreur && (
               <div className="bg-rouge/10 border border-rouge/20 text-rouge rounded-xl px-4 py-3 text-sm">
                 Une erreur est survenue : {erreur}
               </div>
             )}
 
-            {/* Mode liste ou carte */}
-            {vue === "liste" ? (
+            {/* Mode liste */}
+            {vue === "liste" && (
               <>
                 <PiscineList
                   piscines={piscines}
@@ -99,12 +110,20 @@ export function PiscineListPage() {
                   <Pagination pagination={pagination} onPageChange={setPage} />
                 )}
               </>
-            ) : (
-              // Placeholder carte — sera remplacé par PiscineMap avec dynamic import
-              <div className="h-96 bg-bleu-tres-pale rounded-2xl flex items-center justify-center border border-border">
-                <p className="text-muted text-sm">Carte à venir (Leaflet)</p>
-              </div>
             )}
+
+          {/* Mode carte — monté seulement quand l'utilisateur clique sur Carte */}
+          {vue === "carte" && (
+            <div className="h-[600px]">
+              {loading ? (
+                <div className="min-h-[500px] bg-bleu-tres-pale rounded-2xl flex items-center justify-center">
+                  <LoadingSpinner message="Chargement des piscines..." />
+                </div>
+              ) : (
+                <PiscineMap piscines={piscines} />
+              )}
+            </div>
+          )}
 
           </main>
         </div>
