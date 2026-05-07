@@ -215,36 +215,49 @@ export default async function PiscineDetailPage({
 
         {/* Horaires */}
         {piscine.horaires_reguliers.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-5">
+        <div className="bg-white rounded-2xl border border-border p-5">
             <SectionTitre>🕐 Horaires</SectionTitre>
             {(["SCOLAIRE", "VACANCES"] as const).map((periode) => {
-              const horaires = piscine.horaires_reguliers.filter(
+            const horaires = piscine.horaires_reguliers.filter(
                 (h) => h.periode === periode
-              )
-              if (horaires.length === 0) return null
-              return (
+            )
+            if (horaires.length === 0) return null
+
+            // Grouper les horaires par jour
+            const joursOrdre = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"]
+            const parJour = joursOrdre.reduce((acc, jour) => {
+                const creneaux = horaires.filter((h) => h.jour === jour)
+                if (creneaux.length > 0) acc[jour] = creneaux
+                return acc
+            }, {} as Record<string, typeof horaires>)
+
+            return (
                 <div key={periode} className="mb-4 last:mb-0">
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
                     {periode === "SCOLAIRE" ? "Période scolaire" : "Vacances scolaires"}
-                  </p>
-                  <div className="flex flex-col gap-1">
-                    {horaires.map((h) => (
-                      <div key={h.id} className="flex justify-between text-sm py-1 border-b border-border last:border-0">
-                        <span className="text-foreground font-medium w-24">{h.jour}</span>
-                        {h.ferme ? (
-                          <span className="text-rouge">Fermé</span>
+                </p>
+                <div className="flex flex-col gap-1">
+                    {Object.entries(parJour).map(([jour, creneaux]) => (
+                    <div key={jour} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
+                        <span className="text-foreground font-medium w-24">{jour}</span>
+                        {creneaux[0].ferme ? (
+                        <span className="text-rouge">Fermé</span>
                         ) : (
-                          <span className="text-muted">
-                            {h.heure_ouverture} – {h.heure_fermeture}
-                          </span>
+                        <div className="flex flex-col items-end gap-0.5">
+                            {creneaux.map((h) => (
+                            <span key={h.id} className="text-muted">
+                                {h.heure_ouverture} – {h.heure_fermeture}
+                            </span>
+                            ))}
+                        </div>
                         )}
-                      </div>
+                    </div>
                     ))}
-                  </div>
                 </div>
-              )
+                </div>
+            )
             })}
-          </div>
+        </div>
         )}
 
         {/* Activités */}
