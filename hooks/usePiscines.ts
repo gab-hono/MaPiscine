@@ -11,17 +11,31 @@ import type { Piscine, PaginationMeta } from "@/types/piscine"
 // -----------------------------------------------------------------
 
 export type PiscinesFiltres = {
+  //Localisation
   arrondissement?: number
+
+  //Accessibilité et labels
   acces_pmr?: boolean
   queer_friendly?: boolean
   accepte_passe_paris?: boolean
+  is_open?: boolean
+
+  //Équipements
+  seche_cheveux?: boolean
+  casiers?: boolean
+  distributeur_boisson?: boolean
+  distributeur_equipements?: boolean
+
+  //Espaces
+  espace_solarium?: boolean
   vestiaires_mixtes?: boolean
   cabines_individuelles?: boolean
   douches_individuelles?: boolean
   douches_collectives?: boolean
   cabine_pmr?: boolean
-  espace_solarium?: boolean
-  is_open?: boolean
+
+  //Bassins - valeur numérique (25 ou 50) - Nécessite un endpoint dédié côté API
+  longueur_bassin?: number
 }
 
 // -----------------------------------------------------------------
@@ -32,7 +46,6 @@ const FILTRES_INITIAUX: PiscinesFiltres = {}
 
 // -----------------------------------------------------------------
 // Utilitaire : convertit les filtres en query string
-// On n'inclut que les filtres qui ont une valeur définie
 // -----------------------------------------------------------------
 
 function filtresVersQueryString(
