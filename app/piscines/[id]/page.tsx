@@ -1,28 +1,25 @@
 // app/piscines/[id]/page.tsx
 // Page détail d'une piscine — Server Component
-// Fetch côté serveur, gestion 404, données complètes
+// Fetch côté serveur, gestion 404, sections repliables via SectionToggle
 
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
 import { Badge } from "@/components/ui/Badge"
+import { SectionToggle } from "@/components/ui/SectionToggle"
 
 // -----------------------------------------------------------------
-// Fetch côté serveur — appelé au moment du rendu
+// Fetch côté serveur
 // -----------------------------------------------------------------
 
 async function getPiscine(id: string): Promise<Piscine | null> {
   try {
-    // En Server Component, on utilise l'URL absolue
     const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
     const res = await fetch(`${baseUrl}/api/piscines/${id}`, {
-      // next.js cache : on revalide toutes les heures
       next: { revalidate: 3600 },
     })
-
     if (res.status === 404) return null
     if (!res.ok) throw new Error(`Erreur API : ${res.status}`)
-
     const json = await res.json()
     return json.data as Piscine
   } catch {
@@ -31,16 +28,22 @@ async function getPiscine(id: string): Promise<Piscine | null> {
 }
 
 // -----------------------------------------------------------------
-// Composants internes
+// Utilitaire : grouper les horaires par jour dans l'ordre lun→dim
 // -----------------------------------------------------------------
 
-function SectionTitre({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-base font-semibold text-bleu-profond flex items-center gap-2 mb-3">
-      {children}
-    </h2>
-  )
+const JOURS_ORDRE = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+
+function grouperParJour(horaires: Piscine["horaires_reguliers"]) {
+  return JOURS_ORDRE.reduce((acc, jour) => {
+    const creneaux = horaires.filter((h) => h.jour === jour)
+    if (creneaux.length > 0) acc[jour] = creneaux
+    return acc
+  }, {} as Record<string, Piscine["horaires_reguliers"]>)
 }
+
+// -----------------------------------------------------------------
+// Composants internes (Server — pas de state)
+// -----------------------------------------------------------------
 
 function LigneInfo({ label, valeur }: { label: string; valeur: string | number | null }) {
   if (!valeur) return null
@@ -48,6 +51,19 @@ function LigneInfo({ label, valeur }: { label: string; valeur: string | number |
     <div className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
       <span className="text-muted">{label}</span>
       <span className="font-medium text-foreground">{valeur}</span>
+    </div>
+  )
+}
+
+function EquipementItem({ label, actif }: { label: string; actif: boolean }) {
+  return (
+    <div
+      className={`text-sm px-3 py-2 rounded-lg flex items-center gap-2 ${
+        actif ? "bg-vert/10 text-vert" : "bg-gray-50 text-muted line-through"
+      }`}
+    >
+      <span aria-hidden="true">{actif ? "✓" : "✗"}</span>
+      {label}
     </div>
   )
 }
@@ -64,12 +80,20 @@ export default async function PiscineDetailPage({
   const { id } = await params
   const piscine = await getPiscine(id)
 
-  // Redirige vers la page 404 de Next.js si la piscine n'existe pas
   if (!piscine) notFound()
+
+  const horairesGroupes = {
+    SCOLAIRE: grouperParJour(
+      piscine.horaires_reguliers.filter((h) => h.periode === "SCOLAIRE")
+    ),
+    VACANCES: grouperParJour(
+      piscine.horaires_reguliers.filter((h) => h.periode === "VACANCES")
+    ),
+  }
 
   return (
     <div className="min-h-screen bg-surface">
-      <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-4">
 
         {/* Bouton retour */}
         <Link
@@ -79,9 +103,8 @@ export default async function PiscineDetailPage({
           ← Retour à la liste
         </Link>
 
-        {/* En-tête */}
+        {/* En-tête — toujours visible, pas de toggle */}
         <div className="bg-white rounded-2xl border border-border overflow-hidden">
-          {/* Zone image */}
           <div className="h-48 bg-bleu-tres-pale flex items-center justify-center">
             {piscine.images_galerie.length > 0 ? (
               <img
@@ -103,7 +126,6 @@ export default async function PiscineDetailPage({
               </p>
             </div>
 
-            {/* Badges */}
             <div className="flex flex-wrap gap-2">
               <Badge
                 label={piscine.is_open ? "Ouverte" : "Fermée"}
@@ -115,12 +137,10 @@ export default async function PiscineDetailPage({
               {piscine.accepte_passe_paris && <Badge label="Pass 3 mois" variant="passe" size="md" />}
             </div>
 
-            {/* Description */}
             {piscine.description && (
               <p className="text-sm text-foreground leading-relaxed">{piscine.description}</p>
             )}
 
-            {/* Contact */}
             <div className="flex flex-wrap gap-3 pt-1">
               {piscine.telephone && (
                 <a
@@ -146,11 +166,13 @@ export default async function PiscineDetailPage({
 
         {/* Bassins */}
         {piscine.bassins.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-5">
-            <SectionTitre>🏊 Bassins</SectionTitre>
-            <div className="flex flex-col gap-4">
+          <SectionToggle titre="Bassins" icone="🏊">
+            <div className="flex flex-col gap-3">
               {piscine.bassins.map((bassin) => (
-                <div key={bassin.id} className="bg-bleu-tres-pale rounded-xl p-3 text-sm flex flex-col gap-1">
+                <div
+                  key={bassin.id}
+                  className="bg-bleu-tres-pale rounded-xl p-3 text-sm flex flex-col gap-1"
+                >
                   <p className="font-semibold text-bleu-profond">{bassin.nom ?? "Bassin"}</p>
                   {bassin.longueur && (
                     <p className="text-muted">
@@ -167,12 +189,54 @@ export default async function PiscineDetailPage({
                 </div>
               ))}
             </div>
-          </div>
+          </SectionToggle>
+        )}
+
+        {/* Horaires */}
+        {piscine.horaires_reguliers.length > 0 && (
+          <SectionToggle titre="Horaires" icone="🕐">
+            <div className="flex flex-col gap-3">
+              {(["SCOLAIRE", "VACANCES"] as const).map((periode) => {
+                const parJour = horairesGroupes[periode]
+                if (Object.keys(parJour).length === 0) return null
+
+                return (
+                  <SectionToggle
+                    key={periode}
+                    titre={periode === "SCOLAIRE" ? "Période scolaire" : "Période vacances scolaires"}
+                    variante="plain"
+                    defaultOuvert={periode === "SCOLAIRE"}
+                  >
+                    <div className="flex flex-col">
+                      {Object.entries(parJour).map(([jour, creneaux]) => (
+                        <div
+                          key={jour}
+                          className="flex justify-between text-sm py-1.5 border-b border-border last:border-0"
+                        >
+                          <span className="text-foreground font-medium w-24">{jour}</span>
+                          {creneaux[0].ferme ? (
+                            <span className="text-rouge">Fermé</span>
+                          ) : (
+                            <div className="flex flex-col items-end gap-0.5">
+                              {creneaux.map((h) => (
+                                <span key={h.id} className="text-muted">
+                                  {h.heure_ouverture} – {h.heure_fermeture}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </SectionToggle>
+                )
+              })}
+            </div>
+          </SectionToggle>
         )}
 
         {/* Tarifs */}
-        <div className="bg-white rounded-2xl border border-border p-5">
-          <SectionTitre>💶 Tarifs</SectionTitre>
+        <SectionToggle titre="Tarifs" icone="💶">
           <LigneInfo label="Entrée normale" valeur={piscine.prix_entree_normal ? `${piscine.prix_entree_normal} €` : null} />
           <LigneInfo label="Entrée réduite" valeur={piscine.prix_entree_reduit ? `${piscine.prix_entree_reduit} €` : null} />
           <LigneInfo label="Carnet 10 entrées" valeur={piscine.prix_carnet_normal ? `${piscine.prix_carnet_normal} €` : null} />
@@ -180,90 +244,27 @@ export default async function PiscineDetailPage({
           <LigneInfo label="Abonnement 3 mois" valeur={piscine.prix_abonnement_normal ? `${piscine.prix_abonnement_normal} €` : null} />
           <LigneInfo label="Abonnement réduit" valeur={piscine.prix_abonnement_reduit ? `${piscine.prix_abonnement_reduit} €` : null} />
           <LigneInfo label="Brevet de natation" valeur={piscine.prix_brevet_natation ? `${piscine.prix_brevet_natation} €` : null} />
-        </div>
+        </SectionToggle>
 
         {/* Équipements */}
-        <div className="bg-white rounded-2xl border border-border p-5">
-          <SectionTitre>🛁 Équipements & espaces</SectionTitre>
+        <SectionToggle titre="Équipements & espaces" icone="🛁">
           <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: "Sèche-cheveux", actif: piscine.seche_cheveux },
-              { label: "Casiers", actif: piscine.casiers },
-              { label: "Distributeur boissons", actif: piscine.distributeur_boisson },
-              { label: "Distributeur équipements", actif: piscine.distributeur_equipements },
-              { label: "Espace solarium", actif: piscine.espace_solarium },
-              { label: "Vestiaires mixtes", actif: piscine.vestiaires_mixtes },
-              { label: "Cabines individuelles", actif: piscine.cabines_individuelles },
-              { label: "Douches individuelles", actif: piscine.douches_individuelles },
-              { label: "Douches collectives", actif: piscine.douches_collectives },
-              { label: "Cabine PMR", actif: piscine.cabine_pmr },
-            ].map(({ label, actif }) => (
-              <div
-                key={label}
-                className={`text-sm px-3 py-2 rounded-lg flex items-center gap-2 ${
-                  actif
-                    ? "bg-vert/10 text-vert"
-                    : "bg-gray-50 text-muted line-through"
-                }`}
-              >
-                <span aria-hidden="true">{actif ? "✓" : "✗"}</span>
-                {label}
-              </div>
-            ))}
+            <EquipementItem label="Sèche-cheveux" actif={piscine.seche_cheveux} />
+            <EquipementItem label="Casiers" actif={piscine.casiers} />
+            <EquipementItem label="Dist. boissons" actif={piscine.distributeur_boisson} />
+            <EquipementItem label="Dist. équipements" actif={piscine.distributeur_equipements} />
+            <EquipementItem label="Solarium" actif={piscine.espace_solarium} />
+            <EquipementItem label="Vestiaires mixtes" actif={piscine.vestiaires_mixtes} />
+            <EquipementItem label="Cabines indiv." actif={piscine.cabines_individuelles} />
+            <EquipementItem label="Douches indiv." actif={piscine.douches_individuelles} />
+            <EquipementItem label="Douches collectives" actif={piscine.douches_collectives} />
+            <EquipementItem label="Cabine PMR" actif={piscine.cabine_pmr} />
           </div>
-        </div>
-
-        {/* Horaires */}
-        {piscine.horaires_reguliers.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border p-5">
-            <SectionTitre>🕐 Horaires</SectionTitre>
-            {(["SCOLAIRE", "VACANCES"] as const).map((periode) => {
-            const horaires = piscine.horaires_reguliers.filter(
-                (h) => h.periode === periode
-            )
-            if (horaires.length === 0) return null
-
-            // Grouper les horaires par jour
-            const joursOrdre = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"]
-            const parJour = joursOrdre.reduce((acc, jour) => {
-                const creneaux = horaires.filter((h) => h.jour === jour)
-                if (creneaux.length > 0) acc[jour] = creneaux
-                return acc
-            }, {} as Record<string, typeof horaires>)
-
-            return (
-                <div key={periode} className="mb-4 last:mb-0">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">
-                    {periode === "SCOLAIRE" ? "Période scolaire" : "Vacances scolaires"}
-                </p>
-                <div className="flex flex-col gap-1">
-                    {Object.entries(parJour).map(([jour, creneaux]) => (
-                    <div key={jour} className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
-                        <span className="text-foreground font-medium w-24">{jour}</span>
-                        {creneaux[0].ferme ? (
-                        <span className="text-rouge">Fermé</span>
-                        ) : (
-                        <div className="flex flex-col items-end gap-0.5">
-                            {creneaux.map((h) => (
-                            <span key={h.id} className="text-muted">
-                                {h.heure_ouverture} – {h.heure_fermeture}
-                            </span>
-                            ))}
-                        </div>
-                        )}
-                    </div>
-                    ))}
-                </div>
-                </div>
-            )
-            })}
-        </div>
-        )}
+        </SectionToggle>
 
         {/* Activités */}
         {piscine.activites.length > 0 && (
-          <div className="bg-white rounded-2xl border border-border p-5">
-            <SectionTitre>🤽 Activités</SectionTitre>
+          <SectionToggle titre="Activités" icone="🤽">
             <div className="flex flex-wrap gap-2">
               {piscine.activites.map((activite) => (
                 <span
@@ -274,21 +275,21 @@ export default async function PiscineDetailPage({
                 </span>
               ))}
             </div>
-          </div>
+          </SectionToggle>
         )}
 
-        {/* Boutons actions — placeholder pour l'espace user (sprint suivant) */}
+        {/* Boutons actions — placeholder sprint suivant */}
         <div className="flex flex-col sm:flex-row gap-3 pb-6">
           <button
             className="flex-1 py-3 rounded-xl bg-bleu-profond text-white font-semibold text-sm
-                       hover:bg-bleu-moyen transition-colors"
+                       opacity-50 cursor-not-allowed"
             disabled
           >
             ♡ Ajouter aux favoris
           </button>
           <button
             className="flex-1 py-3 rounded-xl border border-bleu-profond text-bleu-profond font-semibold text-sm
-                       hover:bg-bleu-tres-pale transition-colors"
+                       opacity-50 cursor-not-allowed"
             disabled
           >
             ★ Laisser un avis
