@@ -4,6 +4,43 @@
 
 import type { PiscinesFiltres } from "@/hooks/usePiscines"
 
+// -----------------------------------------------------------------
+// Sous-composants internes
+// -----------------------------------------------------------------
+ 
+function SectionFiltres({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-semibold text-foreground">{titre}</p>
+      {children}
+    </div>
+  )
+}
+ 
+function CheckboxFiltre({
+    id, label, checked, onChange,
+  }: {
+    id: string
+    label: string
+    checked: boolean
+    onChange: (val: boolean) => void
+  }) {
+    return (
+      <label htmlFor={id} className="flex items-center gap-2 cursor-pointer group">
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="w-4 h-4 rounded border-border accent-bleu-moyen focus:ring-bleu-clair"
+        />
+        <span className="text-sm text-foreground group-hover:text-bleu-moyen transition-colors">
+          {label}
+        </span>
+      </label>
+    )
+}
+
 interface PiscineFiltresProps {
   filtres: PiscinesFiltres
   onMettreAJour: (cle: keyof PiscinesFiltres, valeur: PiscinesFiltres[typeof cle]) => void
@@ -53,65 +90,102 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
         </select>
       </div>
 
-      {/* Filtres booléens */}
-      <div className="flex flex-col gap-2">
-        <label className="text-xs font-semibold text-foreground">Accessibilité</label>
-
+            {/* Accessibilité */}
+      <SectionFiltres titre="Accessibilité">
         <CheckboxFiltre
-          id="acces_pmr"
-          label="Accessible PMR"
+          id="acces_pmr" label="Accessible PMR"
           checked={filtres.acces_pmr === true}
-          onChange={(val) => onMettreAJour("acces_pmr", val || undefined)}
+          onChange={(v) => onMettreAJour("acces_pmr", v || undefined)}
         />
         <CheckboxFiltre
-          id="queer_friendly"
-          label="Queer Friendly"
+          id="queer_friendly" label="Queer Friendly"
           checked={filtres.queer_friendly === true}
-          onChange={(val) => onMettreAJour("queer_friendly", val || undefined)}
+          onChange={(v) => onMettreAJour("queer_friendly", v || undefined)}
         />
         <CheckboxFiltre
-          id="is_open"
-          label="Ouverte uniquement"
+          id="is_open" label="Ouverte uniquement"
           checked={filtres.is_open === true}
-          onChange={(val) => onMettreAJour("is_open", val || undefined)}
+          onChange={(v) => onMettreAJour("is_open", v || undefined)}
         />
         <CheckboxFiltre
-          id="accepte_passe_paris"
-          label="Accepte le Pass Paris"
+          id="accepte_passe_paris" label="Pass 3 mois"
           checked={filtres.accepte_passe_paris === true}
-          onChange={(val) => onMettreAJour("accepte_passe_paris", val || undefined)}
+          onChange={(v) => onMettreAJour("accepte_passe_paris", v || undefined)}
         />
-      </div>
+      </SectionFiltres>
+ 
+      {/* Équipements */}
+      <SectionFiltres titre="Équipements">
+        <CheckboxFiltre
+          id="seche_cheveux" label="Sèche-cheveux"
+          checked={filtres.seche_cheveux === true}
+          onChange={(v) => onMettreAJour("seche_cheveux", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="casiers" label="Casiers"
+          checked={filtres.casiers === true}
+          onChange={(v) => onMettreAJour("casiers", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="distributeur_boisson" label="Distributeur de boissons"
+          checked={filtres.distributeur_boisson === true}
+          onChange={(v) => onMettreAJour("distributeur_boisson", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="distributeur_equipements" label="Distributeur d'équipements"
+          checked={filtres.distributeur_equipements === true}
+          onChange={(v) => onMettreAJour("distributeur_equipements", v || undefined)}
+        />
+      </SectionFiltres>
+ 
+      {/* Espaces */}
+      <SectionFiltres titre="Espaces">
+        <CheckboxFiltre
+          id="espace_solarium" label="Espace solarium"
+          checked={filtres.espace_solarium === true}
+          onChange={(v) => onMettreAJour("espace_solarium", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="vestiaires_mixtes" label="Vestiaires mixtes"
+          checked={filtres.vestiaires_mixtes === true}
+          onChange={(v) => onMettreAJour("vestiaires_mixtes", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="cabines_individuelles" label="Cabines individuelles"
+          checked={filtres.cabines_individuelles === true}
+          onChange={(v) => onMettreAJour("cabines_individuelles", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="douches_individuelles" label="Douches individuelles"
+          checked={filtres.douches_individuelles === true}
+          onChange={(v) => onMettreAJour("douches_individuelles", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="douches_collectives" label="Douches collectives"
+          checked={filtres.douches_collectives === true}
+          onChange={(v) => onMettreAJour("douches_collectives", v || undefined)}
+        />
+        <CheckboxFiltre
+          id="cabine_pmr" label="Cabine PMR"
+          checked={filtres.cabine_pmr === true}
+          onChange={(v) => onMettreAJour("cabine_pmr", v || undefined)}
+        />
+      </SectionFiltres>
+ 
+      {/* Bassins */}
+      <SectionFiltres titre="Bassins">
+        <CheckboxFiltre
+          id="bassin_25m" label="Bassin 25m"
+          checked={filtres.longueur_bassin === 25}
+          onChange={(v) => onMettreAJour("longueur_bassin", v ? 25 : undefined)}
+        />
+        <CheckboxFiltre
+          id="bassin_50m" label="Bassin 50m"
+          checked={filtres.longueur_bassin === 50}
+          onChange={(v) => onMettreAJour("longueur_bassin", v ? 50 : undefined)}
+        />
+      </SectionFiltres>
 
     </div>
-  )
-}
-
-// Sous-composant interne — checkbox réutilisable dans ce fichier
-function CheckboxFiltre({
-  id,
-  label,
-  checked,
-  onChange,
-}: {
-  id: string
-  label: string
-  checked: boolean
-  onChange: (val: boolean) => void
-}) {
-  return (
-    <label htmlFor={id} className="flex items-center gap-2 cursor-pointer group">
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 rounded border-border text-bleu-moyen
-                   focus:ring-bleu-clair accent-bleu-moyen"
-      />
-      <span className="text-sm text-foreground group-hover:text-bleu-moyen transition-colors">
-        {label}
-      </span>
-    </label>
   )
 }
