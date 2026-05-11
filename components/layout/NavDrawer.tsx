@@ -48,7 +48,9 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         >
             {/* En-tête du drawer */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <span className="font-bold text-bleu-profond text-lg">À la piscine !</span>
+                <Link href="/" className="font-bold text-bleu-profond text-lg">
+                    À la piscine !
+                </Link>
                 <button
                     onClick={onClose}
                     className="text-muted hover:text-foreground transition-colors"
