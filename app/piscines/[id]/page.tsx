@@ -7,9 +7,10 @@ import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
 import { Badge } from "@/components/ui/Badge"
 import { SectionToggle } from "@/components/ui/SectionToggle"
+import { AvisSection } from "@/components/piscines/AvisSection"
 
 // -----------------------------------------------------------------
-// Fetch côté serveur
+// Fetch côté serveur — piscine
 // -----------------------------------------------------------------
 
 async function getPiscine(id: string): Promise<Piscine | null> {
@@ -24,6 +25,24 @@ async function getPiscine(id: string): Promise<Piscine | null> {
     return json.data as Piscine
   } catch {
     return null
+  }
+}
+
+// -----------------------------------------------------------------
+// Fetch côté serveur — avis
+// -----------------------------------------------------------------
+
+async function getAvis(piscineId: string) {
+  try {
+    const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/avis?piscineId=${piscineId}`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data ?? []
+  } catch {
+    return []
   }
 }
 
@@ -78,7 +97,12 @@ export default async function PiscineDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const piscine = await getPiscine(id)
+
+  // Fetch en parallèle — plus rapide qu'en séquence
+  const [piscine, avis] = await Promise.all([
+    getPiscine(id),
+    getAvis(id),
+  ])
 
   if (!piscine) notFound()
 
@@ -141,6 +165,7 @@ export default async function PiscineDetailPage({
               <p className="text-sm text-foreground leading-relaxed">{piscine.description}</p>
             )}
 
+            {/* Contact */}
             <div className="flex flex-wrap gap-3 pt-1">
               {piscine.telephone && (
                 <a
@@ -158,6 +183,16 @@ export default async function PiscineDetailPage({
                   className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors"
                 >
                   🌐 Site web
+                </a>
+              )}
+              {piscine.latitude && piscine.longitude && (
+                <a
+                  href={`https://www.google.com/maps?q=${piscine.latitude},${piscine.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors"
+                >
+                  📍 Voir sur Google Maps
                 </a>
               )}
             </div>
@@ -278,23 +313,10 @@ export default async function PiscineDetailPage({
           </SectionToggle>
         )}
 
-        {/* Boutons actions — placeholder sprint suivant */}
-        <div className="flex flex-col sm:flex-row gap-3 pb-6">
-          <button
-            className="flex-1 py-3 rounded-xl bg-bleu-profond text-white font-semibold text-sm
-                       opacity-50 cursor-not-allowed"
-            disabled
-          >
-            ♡ Ajouter aux favoris
-          </button>
-          <button
-            className="flex-1 py-3 rounded-xl border border-bleu-profond text-bleu-profond font-semibold text-sm
-                       opacity-50 cursor-not-allowed"
-            disabled
-          >
-            ★ Laisser un avis
-          </button>
-        </div>
+        {/* Avis + boutons d'action */}
+        <SectionToggle titre="Avis" icone="★" defaultOuvert={true}>
+          <AvisSection avis={avis} piscineId={piscine.id} />
+        </SectionToggle>
 
       </div>
     </div>
