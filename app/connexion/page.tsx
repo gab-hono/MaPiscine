@@ -14,6 +14,7 @@ export default function ConnexionPage() {
   const [motDePasse, setMotDePasse] = useState("")
   const [erreur, setErreur] = useState<string | null>(null)
   const [chargement, setChargement] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -81,23 +82,29 @@ export default function ConnexionPage() {
           </div>
 
           {/* Mot de passe */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="mot-de-passe" className="text-sm font-semibold text-foreground">
-              Mot de passe
-            </label>
+          <div className="relative">
             <input
-              id="mot-de-passe"
-              type="password"
-              value={motDePasse}
-              onChange={(e) => setMotDePasse(e.target.value)}
-              required
-              autoComplete="current-password"
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm
-                         text-foreground placeholder:text-muted bg-white
-                         focus:outline-none focus:ring-2 focus:ring-bleu-clair"
+                id="mot-de-passe"
+                type={showPassword ? "text" : "password"}
+                value={motDePasse}
+                onChange={(e) => setMotDePasse(e.target.value)}
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 pr-11 rounded-xl border border-border text-sm
+                        text-foreground placeholder:text-muted bg-white
+                        focus:outline-none focus:ring-2 focus:ring-bleu-clair"
             />
-          </div>
+            <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted
+                        hover:text-foreground transition-colors"
+                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+            >
+                {showPassword ? "🙈" : "👁️"}
+            </button>
+            </div>
 
           {/* Bouton */}
           <button
