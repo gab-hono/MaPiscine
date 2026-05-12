@@ -4,42 +4,44 @@ export async function proxy(req: NextRequest) {
   if (req.method === 'GET' && req.nextUrl.pathname === '/api/avis') {
     return NextResponse.next()
   }
-  
-  const token = req.headers.get("authorization")?.replace("Bearer ", "");
+
+  // Intentar obtener el token — primero del header Bearer, luego de la cookie Better Auth
+  let token = req.headers.get("authorization")?.replace("Bearer ", "")
+
+  // Better Auth guarda la sesión dans la cookie "better-auth.session_token"
+  if (!token) {
+    token = req.cookies.get("better-auth.session_token")?.value ?? null
+  }
 
   if (!token) {
     return NextResponse.json(
       { error: "Authentication requise" },
       { status: 401 }
-    );
+    )
   }
 
-  // Verificar el token llamando al endpoint interno
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
   const verifyResponse = await fetch(`${baseUrl}/api/auth/verify`, {
     headers: {
       authorization: `Bearer ${token}`,
     },
-  });
+  })
 
   if (!verifyResponse.ok) {
     return NextResponse.json(
       { error: "Session invalide ou expirée" },
       { status: 401 }
-    );
+    )
   }
 
-  const { userId, role } = await verifyResponse.json();
-
-  // Pasar userId y role a los Route Handlers via headers
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-user-id", userId);
-  requestHeaders.set("x-user-role", role);
+  const { userId, role } = await verifyResponse.json()
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set("x-user-id", userId)
+  requestHeaders.set("x-user-role", role)
 
   return NextResponse.next({
     request: { headers: requestHeaders },
-  });
+  })
 }
 
 export const config = {
@@ -49,4 +51,4 @@ export const config = {
     "/api/admin/:path*",
     "/api/users/:path*",
   ]
-};
+}
