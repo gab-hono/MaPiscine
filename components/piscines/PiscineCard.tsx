@@ -1,16 +1,15 @@
 // components/piscines/PiscineCard.tsx
-// Carte visuelle d'une piscine dans la liste — basée sur la maquette haute fidélité
+// Carte visuelle d'une piscine dans la liste
 
 import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
 import { Badge } from "@/components/ui/Badge"
+import { BoutonFavori } from "@/components/piscines/BoutonFavori"
 
 interface PiscineCardProps {
   piscine: Piscine
 }
 
-// Calcule la note moyenne à partir des _count (pas de notes dans la liste)
-// On affiche les étoiles seulement si on a un nombre d'avis > 0
 function EtoilesAvis({ count }: { count: number }) {
   if (count === 0) {
     return <span className="text-xs text-muted">Aucun avis</span>
@@ -25,9 +24,9 @@ function EtoilesAvis({ count }: { count: number }) {
 export function PiscineCard({ piscine }: PiscineCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-      
-      {/* Zone image — placeholder aquatique si pas d'image */}
-      <div className="h-32 bg-bleu-tres-pale flex items-center justify-center overflow-hidden">
+
+      {/* Zone image — avec bouton favori en overlay haut droite */}
+      <div className="relative h-32 bg-bleu-tres-pale flex items-center justify-center overflow-hidden">
         {piscine.images_galerie.length > 0 ? (
           <img
             src={piscine.images_galerie[0]}
@@ -37,6 +36,11 @@ export function PiscineCard({ piscine }: PiscineCardProps) {
         ) : (
           <span className="text-4xl opacity-30" aria-hidden="true">🏊</span>
         )}
+
+        {/* Bouton favori — positionné en haut à droite de la zone image */}
+        <div className="absolute top-2 right-2 bg-white rounded-full shadow-sm p-0.5">
+          <BoutonFavori piscineId={piscine.id} variante="card" />
+        </div>
       </div>
 
       {/* Contenu de la carte */}
@@ -70,7 +74,7 @@ export function PiscineCard({ piscine }: PiscineCardProps) {
           )}
         </div>
 
-        {/* Avis + action */}
+        {/* Avis + lien fiche */}
         <div className="flex items-center justify-between">
           <EtoilesAvis count={piscine._count?.avis ?? 0} />
           <Link
