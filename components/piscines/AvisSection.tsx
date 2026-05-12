@@ -5,6 +5,7 @@
 
 import { useState } from "react"
 import { AuthPopup } from "@/components/ui/AuthPopup"
+import { BoutonFavori } from "@/components/piscines/BoutonFavori"
 
 // -----------------------------------------------------------------
 // Types — reflète la réponse de GET /api/avis?piscineId=:id
@@ -79,7 +80,6 @@ function CarteAvis({ avis }: { avis: Avis }) {
     year: "numeric",
   })
 
-  // Calcul de la note moyenne
   const moyenne =
     (avis.note_accessibilite +
       avis.note_accueil +
@@ -89,7 +89,6 @@ function CarteAvis({ avis }: { avis: Avis }) {
 
   return (
     <div className="bg-bleu-tres-pale rounded-xl p-4 flex flex-col gap-3">
-      {/* En-tête : moyenne + date */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-bold text-bleu-profond text-base">
@@ -100,7 +99,6 @@ function CarteAvis({ avis }: { avis: Avis }) {
         <span className="text-xs text-muted">{date}</span>
       </div>
 
-      {/* Détail des notes */}
       <div className="flex flex-col gap-2">
         <LigneNote
           label="Accessibilité"
@@ -133,12 +131,6 @@ function CarteAvis({ avis }: { avis: Avis }) {
 
 export function AvisSection({ avis, piscineId }: AvisSectionProps) {
   const [popupOuvert, setPopupOuvert] = useState(false)
-  const [messagePopup, setMessagePopup] = useState("")
-
-  function ouvrirPopup(message: string) {
-    setMessagePopup(message)
-    setPopupOuvert(true)
-  }
 
   return (
     <>
@@ -146,23 +138,12 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
 
         {/* Boutons d'action */}
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* BoutonFavori gère lui-même le popup d'auth si non connecté */}
+          <BoutonFavori piscineId={piscineId} variante="detail" />
+
+          {/* Bouton laisser un avis — popup si non connecté */}
           <button
-            onClick={() =>
-              ouvrirPopup(
-                "Connectez-vous ou créez un compte pour ajouter cette piscine à vos favoris."
-              )
-            }
-            className="flex-1 py-3 rounded-xl bg-bleu-profond text-white
-                       font-semibold text-sm hover:bg-bleu-moyen transition-colors"
-          >
-            ♡ Ajouter aux favoris
-          </button>
-          <button
-            onClick={() =>
-              ouvrirPopup(
-                "Connectez-vous ou créez un compte pour laisser un avis sur cette piscine."
-              )
-            }
+            onClick={() => setPopupOuvert(true)}
             className="flex-1 py-3 rounded-xl border border-bleu-profond
                        text-bleu-profond font-semibold text-sm
                        hover:bg-bleu-tres-pale transition-colors"
@@ -179,7 +160,7 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-xs text-muted">
-              {avis.length} avis{avis.length > 1 ? "" : ""}
+              {avis.length} avis
             </p>
             {avis.map((a) => (
               <CarteAvis key={a.id} avis={a} />
@@ -188,11 +169,11 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
         )}
       </div>
 
-      {/* Pop-up d'authentification */}
+      {/* Pop-up pour laisser un avis */}
       <AuthPopup
         open={popupOuvert}
         onClose={() => setPopupOuvert(false)}
-        message={messagePopup}
+        message="Connectez-vous ou créez un compte pour laisser un avis sur cette piscine."
       />
     </>
   )
