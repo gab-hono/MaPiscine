@@ -46,6 +46,11 @@ export async function GET(request: Request) {
         include: {
           bassins: true,
           horaires_reguliers: true,
+          _count: {
+            select: {
+              avis: true,
+            }
+          }
         },
         skip,
         take: limit,
