@@ -10,7 +10,11 @@ export async function proxy(req: NextRequest) {
 
   // Better Auth guarda la sesión dans la cookie "better-auth.session_token"
   if (!token) {
-    token = req.cookies.get("better-auth.session_token")?.value ?? null
+    const cookieValue = req.cookies.get("better-auth.session_token")?.value ?? null
+  if (cookieValue) {
+  // Decodifica la URL y extrae la parte antes del punto
+  token = decodeURIComponent(cookieValue).split(".")[0]
+}
   }
 
   if (!token) {
