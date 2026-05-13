@@ -88,7 +88,9 @@ export function usePiscines(limitParPage = 12) {
     const queryString = filtresVersQueryString(filtres, page, limitParPage)
 
     try {
-      const res = await fetch(`/api/piscines?${queryString}`)
+      const res = await fetch(`/api/piscines?${queryString}`, {
+        cache: "no-store"
+      })
 
       if (!res.ok) {
         throw new Error(`Erreur API : ${res.status}`)

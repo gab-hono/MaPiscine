@@ -36,7 +36,7 @@ async function getAvis(piscineId: string) {
   try {
     const baseUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000"
     const res = await fetch(`${baseUrl}/api/avis?piscineId=${piscineId}`, {
-      next: { revalidate: 3600 },
+      cache: "no-store",
     })
     if (!res.ok) return []
     const json = await res.json()
