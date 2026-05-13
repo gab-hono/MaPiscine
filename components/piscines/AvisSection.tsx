@@ -3,9 +3,11 @@
 // Client Component car gère l'état du pop-up d'auth
 "use client"
 
-import { useState } from "react"
 import { AuthPopup } from "@/components/ui/AuthPopup"
 import { BoutonFavori } from "@/components/piscines/BoutonFavori"
+import { useState, useEffect } from "react"
+import { authClient } from "@/src/lib/auth-client"
+import { FormulaireAvis } from "@/components/piscines/FormulaireAvis"
 
 // -----------------------------------------------------------------
 // Types — reflète la réponse de GET /api/avis?piscineId=:id
@@ -131,6 +133,15 @@ function CarteAvis({ avis }: { avis: Avis }) {
 
 export function AvisSection({ avis, piscineId }: AvisSectionProps) {
   const [popupOuvert, setPopupOuvert] = useState(false)
+  const [estConnecte, setEstConnecte] = useState(false)
+  const [formulaireOuvert, setFormulaireOuvert] = useState(false)
+  const [avisLocaux, setAvisLocaux] = useState(avis)
+
+  useEffect(() => {
+    authClient.getSession().then((result) => {
+      setEstConnecte(!!result?.data?.user)
+    })
+  }, [])
 
   return (
     <>
@@ -143,14 +154,32 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
 
           {/* Bouton laisser un avis — popup si non connecté */}
           <button
-            onClick={() => setPopupOuvert(true)}
+            onClick={() => {
+              if (!estConnecte) {
+                setPopupOuvert(true)
+              } else {
+                setFormulaireOuvert(!formulaireOuvert)
+              }
+            }}
             className="flex-1 py-3 rounded-xl border border-bleu-profond
-                       text-bleu-profond font-semibold text-sm
-                       hover:bg-bleu-tres-pale transition-colors"
+                      text-bleu-profond font-semibold text-sm
+                      hover:bg-bleu-tres-pale transition-colors"
           >
-            ★ Laisser un avis
+            {formulaireOuvert ? "✕ Annuler" : "★ Laisser un avis"}
           </button>
         </div>
+
+        {formulaireOuvert && (
+            <FormulaireAvis
+              piscineId={piscineId}
+              onSuccess={() => {
+                setFormulaireOuvert(false)
+                // Recharger la page pour voir le nouvel avis
+                window.location.reload()
+              }}
+              onAnnuler={() => setFormulaireOuvert(false)}
+            />
+          )}
 
         {/* Liste des avis */}
         {avis.length === 0 ? (
