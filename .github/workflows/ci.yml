@@ -24,3 +24,6 @@ jobs:
             
             - name: "Execute build"
               run: npm run build
+            
+            - name: "Test check role"
+              run: npm test
