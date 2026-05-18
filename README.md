@@ -1,4 +1,4 @@
-# 🏊 À la Piscine
+# 🏊 MaPiscine
 
 Application web de centralisation et d'accessibilité des informations sur les piscines municipales parisiennes, avec une dimension inclusive forte.
 
@@ -6,9 +6,9 @@ Application web de centralisation et d'accessibilité des informations sur les p
 
 ---
 
-## 🌊 À propos du projet
+## À propos du projet
 
-**À la Piscine** répond à un double constat : les informations sur les piscines municipales parisiennes sont dispersées et peu accessibles, et l'accueil des personnes trans et non binaires y est souvent insuffisamment documenté.
+**MaPiscine** répond à un double constat : les informations sur les piscines municipales parisiennes sont dispersées et peu accessibles, et l'accueil des personnes trans et non binaires y est souvent insuffisamment documenté.
 
 L'application poursuit trois objectifs :
 
@@ -18,7 +18,7 @@ L'application poursuit trois objectifs :
 
 ---
 
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 ### Tous les profils (non authentifié·e)
 
@@ -59,7 +59,7 @@ L'application poursuit trois objectifs :
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 L'application suit une architecture **monolithique Next.js full-stack** avec App Router :
 
@@ -95,7 +95,7 @@ Les routes admin vérifient en plus que le `piscineId` de la piscine demandée c
 
 ---
 
-## 📡 Endpoints API
+## Endpoints API
 
 ### Publics (sans authentification)
 
@@ -125,32 +125,6 @@ Les routes admin vérifient en plus que le `piscineId` de la piscine demandée c
 | --- | --- | --- |
 | `GET` | `/api/admin/piscines/:id` | Détail complet avec tous les avis |
 | `PATCH` | `/api/admin/piscines/:id` | Mise à jour des champs temps réel |
-
----
-
-## 📁 Structure du projet
-
-```
-piscines-paris/
-├── app/                        # Pages et layouts (App Router)
-├── src/
-│   ├── app/
-│   │   └── api/                # Route Handlers
-│   │       ├── piscines/
-│   │       ├── avis/
-│   │       ├── favoris/
-│   │       ├── users/
-│   │       └── admin/
-│   └── lib/
-│       └── prisma.ts           # Client Prisma
-├── prisma/
-│   ├── schema.prisma           # Schéma de la base de données
-│   ├── seed.ts                 # Données initiales (42 piscines)
-│   └── migrations/
-├── proxy.ts                    # Middleware d'authentification
-├── .env                        # Variables d'environnement
-└── package.json
-```
 
 ---
 
@@ -193,4 +167,4 @@ npm run dev
 
 ---
 
-*Projet développé dans le cadre du titre RNCP niveau 6 · Ada Tech School · 2025–2026*
+*Projet développé dans le cadre du titre RNCP niveau 6, par GABRIEL HONO · Ada Tech School · 2025–2026*
