@@ -14,13 +14,13 @@ export default function GuidePage() {
           href="/"
           className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors flex items-center gap-1 w-fit"
         >
-          ← Retour à l'accueil
+          Retour à l'accueil
         </Link>
 
         {/* En-tête */}
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-bold text-bleu-profond">
-            Guide des piscines de Paris
+            Guide de l'application MaPiscine
           </h1>
           <p className="text-muted text-sm">
             Tout ce que vous devez savoir pour utiliser l'application et trouver
@@ -34,7 +34,7 @@ export default function GuidePage() {
             🏊 À propos de l'application
           </h2>
           <p className="text-sm text-foreground leading-relaxed">
-            <strong>À la piscine !</strong> est une application indépendante qui
+            <strong>MaPiscine</strong> est une application indépendante qui
             centralise les informations sur les 42 piscines municipales de Paris.
             Elle permet de filtrer les piscines selon vos besoins d'accessibilité,
             vos équipements préférés et votre arrondissement.
@@ -177,7 +177,7 @@ export default function GuidePage() {
             className="w-fit text-sm font-semibold text-bleu-moyen hover:text-bleu-profond
                        transition-colors underline underline-offset-2"
           >
-            Créer un compte →
+            Créer un compte
           </Link>
         </section>
 

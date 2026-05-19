@@ -74,7 +74,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
             onClick={onClose}
             className="font-bold text-bleu-profond text-lg hover:opacity-80 transition-opacity"
           >
-            À la piscine !
+            MaPiscine
           </Link>
           <button
             onClick={onClose}
@@ -178,7 +178,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         {/* Pied du drawer */}
         <div className="px-5 py-4 border-t border-border">
           <p className="text-xs text-muted text-center">
-            À la piscine ! — Données : Ville de Paris
+            MaPiscine • Données : Ville de Paris
           </p>
         </div>
       </div>

@@ -41,7 +41,7 @@ export function Navbar() {
             href="/"
             className="font-bold text-lg tracking-tight hover:opacity-90 transition-opacity"
           >
-            À la piscine !
+            MaPiscine
           </Link>
 
           {/* Espace réservé pour futures actions (favoris, profil) */}

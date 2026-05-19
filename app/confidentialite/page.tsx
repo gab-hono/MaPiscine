@@ -13,7 +13,7 @@ export default function ConfidentialitePage() {
           href="/"
           className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors flex items-center gap-1 w-fit"
         >
-          ← Retour à l'accueil
+          Retour à l'accueil
         </Link>
 
         {/* En-tête */}
@@ -32,7 +32,7 @@ export default function ConfidentialitePage() {
           <section className="flex flex-col gap-2">
             <h2 className="font-semibold text-bleu-profond">1. Responsable du traitement</h2>
             <p>
-              L'application <strong>À la piscine !</strong> est un projet étudiant
+              L'application <strong>MaPiscine</strong> est un projet étudiant
               développé dans le cadre d'une certification RNCP Niveau 6 à Ada Tech
               School (Paris). Elle n'est pas une application commerciale.
             </p>
