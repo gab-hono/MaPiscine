@@ -89,45 +89,55 @@ export async function POST(req: NextRequest) {
     }
 }
 
-/* Función GET pública para que cualquier persona pueda consultar los avis de una piscina */
+/* Récuperation des avis dans 2 cas : avec ou sans session */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('piscineId')
 
-    // Validar que se envía y que es numérico
-    if (!id) {
-      return NextResponse.json({ error: "piscineId manquant" }, { status: 400 })
-    }
-
-    const piscineId = parseInt(id)
-    if (isNaN(piscineId)) {
-      return NextResponse.json({ error: "piscineId invalide" }, { status: 400 })
-    };
-
-    // Verificar que la piscine existe
-    const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
-    if (!piscine) {
-      return NextResponse.json({ error: "Piscine non trouvée" }, { status: 404 })
-    }
-
-    // Devolver los avis sin exponer userId
-    const avis = await prisma.avis.findMany({
-      where: { piscineId },
-      select: {
-        id: true,
-        note_accessibilite: true,
-        commentaire_accessibilite: true,
-        note_accueil: true,
-        commentaire_accueil: true,
-        note_bassin: true,
-        commentaire_bassin: true,
-        note_vestiaires: true,
-        commentaire_vestiaires: true,
-        created_at: true,
-        piscineId: true,
-        // userId excluido intencionalmente
+    // Cas 1 : piscineId fourni → avis publics d'une piscine (comportement existant)
+    if (id) {
+      const piscineId = parseInt(id)
+      if (isNaN(piscineId)) {
+        return NextResponse.json({ error: "piscineId invalide" }, { status: 400 })
       }
+      const piscine = await prisma.piscine.findUnique({ where: { id: piscineId } })
+      if (!piscine) {
+        return NextResponse.json({ error: "Piscine non trouvée" }, { status: 404 })
+      }
+      const avis = await prisma.avis.findMany({
+        where: { piscineId },
+        select: {
+          id: true,
+          note_accessibilite: true,
+          commentaire_accessibilite: true,
+          note_accueil: true,
+          commentaire_accueil: true,
+          note_bassin: true,
+          commentaire_bassin: true,
+          note_vestiaires: true,
+          commentaire_vestiaires: true,
+          created_at: true,
+          piscineId: true,
+        }
+      })
+      return NextResponse.json({ data: avis }, { status: 200 })
+    }
+
+    // Cas 2 : pas de piscineId → avis de l'utilisateur connecté
+    const userId = (request as Request & { headers: Headers }).headers.get("x-user-id")
+    if (!userId) {
+      return NextResponse.json({ error: "piscineId manquant ou non authentifié" }, { status: 400 })
+    }
+
+    const avis = await prisma.avis.findMany({
+      where: { userId },
+      include: {
+        piscine: {
+          select: { id: true, nom: true, arrondissement: true }
+        }
+      },
+      orderBy: { created_at: "desc" }
     })
 
     return NextResponse.json({ data: avis }, { status: 200 })
