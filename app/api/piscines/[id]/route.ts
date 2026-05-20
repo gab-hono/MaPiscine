@@ -1,6 +1,7 @@
 // src/app/api/piscines/[id]/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
+import { estOuverteMaintenant } from '@/src/lib/utils/horaires'
 
 export async function GET(
   request: Request,
@@ -39,7 +40,12 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ data: piscine })
+    const piscinesAvecStatut = {
+      ...piscine,
+      is_open: estOuverteMaintenant(piscine.horaires_reguliers)
+    }
+
+    return NextResponse.json({ data: piscinesAvecStatut })
 
   } catch (error) {
     return NextResponse.json(

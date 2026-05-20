@@ -46,7 +46,7 @@ function heureEnMinutes(heure: string): number {
 // -----------------------------------------------------------------
 
 export function estOuverteMaintenant(horaires: HoraireRegulier[]): boolean {
-  // Heure actuelle en fuseau Europe/Paris
+
   const maintenant = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Europe/Paris" })
   )

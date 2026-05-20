@@ -33,7 +33,6 @@ export async function GET(request: Request) {
     if (douches_individuelles === 'true') where.douches_individuelles = true;
     if (cabine_pmr === 'true') where.cabine_pmr = true;
     if (espace_solarium === 'true') where.espace_solarium = true
-    if (is_open === 'true')        where.is_open         = true
 
     //CREATION OF PAGES
     const page = Number(searchParams.get('page') ?? 1)
@@ -61,13 +60,20 @@ export async function GET(request: Request) {
     ])
 
     // Calcul du statut d'ouverture en temps réel
-    const piscinesAvecStatut = piscines.map((p) => ({
-      ...p,
-      is_open: estOuverteMaintenant(p.horaires_reguliers),
-    }))
+    const piscinesAvecStatut = piscines.map((p) => {
+      const ouvert = estOuverteMaintenant(p.horaires_reguliers)
+      return {
+        ...p,
+        is_open: ouvert,
+      }
+    })
+
+    const piscinesFiltrees = is_open === 'true'
+    ? piscinesAvecStatut.filter((p) => p.is_open)
+    : piscinesAvecStatut
 
     return NextResponse.json({
-      data: piscinesAvecStatut,  // ← remplace "piscines"
+      data: piscinesFiltrees,
       pagination: {
         total,
         page,
