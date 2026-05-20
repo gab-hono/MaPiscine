@@ -1,6 +1,7 @@
 //src/app/api/piscines/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/src/lib/prisma'
+import { estOuverteMaintenant } from "@/src/lib/utils/horaires"
 
 export async function GET(request: Request) {
   try {
@@ -59,8 +60,14 @@ export async function GET(request: Request) {
       prisma.piscine.count({ where }),
     ])
 
+    // Calcul du statut d'ouverture en temps réel
+    const piscinesAvecStatut = piscines.map((p) => ({
+      ...p,
+      is_open: estOuverteMaintenant(p.horaires_reguliers),
+    }))
+
     return NextResponse.json({
-      data: piscines,
+      data: piscinesAvecStatut,  // ← remplace "piscines"
       pagination: {
         total,
         page,
@@ -68,6 +75,7 @@ export async function GET(request: Request) {
         totalPages: Math.ceil(total / limit),
       },
     })
+
   }
   catch (error) {
     return NextResponse.json(
