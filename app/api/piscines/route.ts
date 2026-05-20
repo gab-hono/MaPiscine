@@ -34,6 +34,11 @@ export async function GET(request: Request) {
     if (cabine_pmr === 'true') where.cabine_pmr = true;
     if (espace_solarium === 'true') where.espace_solarium = true
 
+    const longueur_bassin = searchParams.get('longueur_bassin')
+    if (longueur_bassin) {
+      where.bassins = { some: { longueur: Number(longueur_bassin) } }
+    }
+
     //CREATION OF PAGES
     const page = Number(searchParams.get('page') ?? 1)
     const limit = Number(searchParams.get('limit') ?? 50);

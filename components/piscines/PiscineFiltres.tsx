@@ -174,16 +174,29 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
  
       {/* Bassins */}
       <SectionFiltres titre="Bassins">
-        <CheckboxFiltre
-          id="bassin_25m" label="Bassin 25m"
-          checked={filtres.longueur_bassin === 25}
-          onChange={(v) => onMettreAJour("longueur_bassin", v ? 25 : undefined)}
-        />
-        <CheckboxFiltre
-          id="bassin_50m" label="Bassin 50m"
-          checked={filtres.longueur_bassin === 50}
-          onChange={(v) => onMettreAJour("longueur_bassin", v ? 50 : undefined)}
-        />
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-foreground">Longueur du bassin</label>
+          <div className="flex gap-2">
+            {[25, 50].map((longueur) => (
+              <button
+                key={longueur}
+                type="button"
+                onClick={() =>
+                  filtres.longueur_bassin === longueur
+                    ? onMettreAJour("longueur_bassin", undefined)
+                    : onMettreAJour("longueur_bassin", longueur)
+                }
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                  filtres.longueur_bassin === longueur
+                    ? "bg-bleu-profond text-white border-bleu-profond"
+                    : "bg-white text-foreground border-border hover:bg-bleu-tres-pale"
+                }`}
+              >
+                {longueur}m
+              </button>
+            ))}
+          </div>
+        </div>
       </SectionFiltres>
     </div>
   )
