@@ -72,7 +72,7 @@ function filtresVersQueryString(
 // Hook principal
 // -----------------------------------------------------------------
 
-export function usePiscines(limitParPage = 12) {
+export function usePiscines(limitParPage = 100) {
   const [piscines, setPiscines] = useState<Piscine[]>([])
   const [pagination, setPagination] = useState<PaginationMeta | null>(null)
   const [filtres, setFiltres] = useState<PiscinesFiltres>(FILTRES_INITIAUX)

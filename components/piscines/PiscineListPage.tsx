@@ -1,5 +1,5 @@
 // components/piscines/PiscineListPage.tsx
-// Orchestrateur client — gère l'état global (filtres, pagination, toggle vue, recherche)
+// Orchestrateur client — gère l'état global (filtres, toggle vue, recherche)
 "use client"
 
 import { useState, useMemo } from "react"
@@ -7,7 +7,6 @@ import dynamic from "next/dynamic"
 import { usePiscines } from "@/hooks/usePiscines"
 import { PiscineList } from "@/components/piscines/PiscineList"
 import { FiltresDrawer } from "@/components/piscines/FiltresDrawer"
-import { Pagination } from "@/components/ui/Pagination"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import type { PiscinesFiltres } from "@/hooks/usePiscines"
 
@@ -41,15 +40,13 @@ export function PiscineListPage() {
 
   const {
     piscines,
-    pagination,
     loading,
     erreur,
     filtres,
     mettreAJourFiltre,
     reinitialiserFiltres,
-    page,
-    setPage,
-  } = usePiscines(12)
+
+  } = usePiscines()
 
   // Filtrage frontend par nom — appliqué sur les piscines déjà chargées
   // useMemo évite de recalculer à chaque render si piscines et recherche n'ont pas changé
@@ -172,10 +169,6 @@ export function PiscineListPage() {
               loading={loading}
               onReinitialiserFiltres={() => { reinitialiserFiltres(); setRecherche("") }}
             />
-            {/* Pagination — masquée si recherche active (résultats déjà filtrés) */}
-            {!recherche.trim() && pagination && (
-              <Pagination pagination={pagination} onPageChange={setPage} />
-            )}
           </>
         )}
 
