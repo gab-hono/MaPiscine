@@ -5,6 +5,7 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { authClient, signOut } from "@/src/lib/auth-client"
+import { Icon } from "@/components/ui/Icon"
 
 interface NavDrawerProps {
   open: boolean
@@ -12,27 +13,26 @@ interface NavDrawerProps {
 }
 
 type SessionUser = {
-    name: string
-    email:string
+  name: string
+  email: string
 } | null
 
 export function NavDrawer({ open, onClose }: NavDrawerProps) {
-    const [user, setUser] = useState<SessionUser>(null)
+  const [user, setUser] = useState<SessionUser>(null)
 
-    useEffect(() => {
-        authClient.getSession().then((result) => {
-            if (result?.data?.user) {
-                setUser({
-                    name: result.data.user.name,
-                    email: result.data.user.email,
-                })
-            } else {
-                setUser(null)
-            }
+  useEffect(() => {
+    authClient.getSession().then((result) => {
+      if (result?.data?.user) {
+        setUser({
+          name: result.data.user.name,
+          email: result.data.user.email,
         })
-    }, [open]) // Se re-vérifie à chaque ouverture du drawer
+      } else {
+        setUser(null)
+      }
+    })
+  }, [open])
 
-  // Bloquer le scroll du body quand le drawer est ouvert
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden"
@@ -46,7 +46,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
 
   return (
     <>
-      {/* Overlay sombre derrière le drawer (clic pour fermer) */}
+      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-40 transition-opacity"
@@ -67,7 +67,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
         aria-modal="true"
         aria-label="Menu de navigation"
       >
-        {/* En-tête du drawer */}
+        {/* En-tête */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <Link
             href="/"
@@ -85,17 +85,14 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
           </button>
         </div>
 
-        {/* Contenu du drawer */}
+        {/* Contenu */}
         <nav className="flex flex-col flex-1 px-4 py-6 gap-1">
 
-          {/* Bloc conditionnel — connecté ou non */}
           {user ? (
             <>
               {/* Infos utilisateur */}
               <div className="px-3 py-2 mb-1">
-                <p className="text-sm font-semibold text-bleu-profond">
-                  {user.name}
-                </p>
+                <p className="text-sm font-semibold text-bleu-profond">{user.name}</p>
                 <p className="text-xs text-muted">{user.email}</p>
               </div>
 
@@ -106,7 +103,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                            text-foreground text-sm hover:bg-bleu-tres-pale
                            hover:text-bleu-profond transition-colors"
               >
-                <span aria-hidden="true">👤</span>
+                <Icon name="compte" className="w-4 h-4 text-bleu-clair" />
                 Mon compte
               </Link>
 
@@ -117,8 +114,19 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                            text-foreground text-sm hover:bg-bleu-tres-pale
                            hover:text-bleu-profond transition-colors"
               >
-                <span aria-hidden="true">♡</span>
+                <Icon name="coeur" className="w-4 h-4 text-bleu-clair" />
                 Mes favoris
+              </Link>
+
+              <Link
+                href="/profil/avis"
+                onClick={onClose}
+                className="flex items-center gap-3 px-3 py-3 rounded-xl
+                           text-foreground text-sm hover:bg-bleu-tres-pale
+                           hover:text-bleu-profond transition-colors"
+              >
+                <Icon name="etoile" className="w-4 h-4 text-bleu-clair" />
+                Mes avis
               </Link>
 
               <div className="my-2 border-t border-border" />
@@ -131,7 +139,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                 className="flex items-center gap-3 px-3 py-3 rounded-xl
                            text-rouge text-sm hover:bg-rouge/10 transition-colors w-full"
               >
-                <span aria-hidden="true">🚪</span>
+                <Icon name="deconnexion" className="w-4 h-4 text-rouge" />
                 Se déconnecter
               </button>
             </>
@@ -143,14 +151,13 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                          bg-bleu-profond text-white font-semibold text-sm
                          hover:bg-bleu-moyen transition-colors"
             >
-              <span aria-hidden="true">🧝🏽‍♂️</span>
+              <Icon name="compte" className="w-4 h-4 text-white" />
               Se connecter / S'inscrire
             </Link>
           )}
 
           <div className="my-3 border-t border-border" />
 
-          {/* Navigation secondaire — toujours visible */}
           <Link
             href="/guide"
             onClick={onClose}
@@ -158,7 +165,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                        text-foreground text-sm hover:bg-bleu-tres-pale
                        hover:text-bleu-profond transition-colors"
           >
-            <span aria-hidden="true">📖</span>
+            <Icon name="natation" className="w-4 h-4 text-bleu-clair" />
             Guide sur les piscines de Paris
           </Link>
 
@@ -169,13 +176,13 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
                        text-foreground text-sm hover:bg-bleu-tres-pale
                        hover:text-bleu-profond transition-colors"
           >
-            <span aria-hidden="true">🔒</span>
+            <Icon name="confidentialite" className="w-4 h-4 text-bleu-clair" />
             Confidentialité (RGPD)
           </Link>
 
         </nav>
 
-        {/* Pied du drawer */}
+        {/* Pied */}
         <div className="px-5 py-4 border-t border-border">
           <p className="text-xs text-muted text-center">
             MaPiscine • Données : Ville de Paris

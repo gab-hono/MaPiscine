@@ -6,6 +6,7 @@ import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
 import { Badge } from "@/components/ui/Badge"
 import { BoutonFavori } from "@/components/piscines/BoutonFavori"
+import { Icon } from "@/components/ui/Icon"
 
 interface PiscineCardProps {
   piscine: Piscine
@@ -14,13 +15,15 @@ interface PiscineCardProps {
   estConnecte: boolean
 }
 
-function EtoilesAvis({ count }: { count: number }) {
+// Affiche le nombre d'avis avec l'icône étoile — plus honnête que des étoiles fixes
+function CompteurAvis({ count }: { count: number }) {
   if (count === 0) {
     return <span className="text-xs text-muted">Aucun avis</span>
   }
   return (
-    <span className="text-xs text-muted">
-      ★★★★☆ <span className="ml-1">({count} avis)</span>
+    <span className="flex items-center gap-1 text-xs text-muted">
+      <Icon name="etoile-pleine" className="w-3 h-3 text-orange" />
+      {count} avis
     </span>
   )
 }
@@ -38,10 +41,10 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-4xl opacity-30" aria-hidden="true">🏊</span>
+          <Icon name="natation" className="w-12 h-12 text-bleu-clair opacity-30" />
         )}
 
-        {/* Bouton favori — positionné en haut à droite de la zone image */}
+        {/* Bouton favori */}
         <div className="absolute top-2 right-2 bg-white rounded-full shadow-sm p-0.5">
           <BoutonFavori
             piscineId={piscine.id}
@@ -62,7 +65,7 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
             {piscine.nom}
           </h2>
           <p className="text-xs text-muted mt-0.5 flex items-center gap-1">
-            <span aria-hidden="true">📍</span>
+            <Icon name="pin" className="w-3 h-3 text-bleu-clair shrink-0" />
             {piscine.adresse}, Paris {piscine.arrondissement}e
           </p>
         </div>
@@ -80,12 +83,13 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
 
         {/* Avis + lien fiche */}
         <div className="flex items-center justify-between">
-          <EtoilesAvis count={piscine._count?.avis ?? 0} />
+          <CompteurAvis count={piscine._count?.avis ?? 0} />
           <Link
             href={`/piscines/${piscine.id}`}
-            className="text-sm font-semibold text-bleu-moyen hover:text-bleu-profond transition-colors"
+            className="flex items-center gap-1 text-sm font-semibold text-bleu-moyen hover:text-bleu-profond transition-colors"
           >
-            Voir la fiche →
+            Voir la fiche
+            <Icon name="fleche-droite" className="w-3 h-3" />
           </Link>
         </div>
 

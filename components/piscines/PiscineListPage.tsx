@@ -10,6 +10,7 @@ import { useFavoris } from "@/hooks/useFavoris"
 import { PiscineList } from "@/components/piscines/PiscineList"
 import { FiltresDrawer } from "@/components/piscines/FiltresDrawer"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
+import { Icon } from "@/components/ui/Icon"
 import type { PiscinesFiltres } from "@/hooks/usePiscines"
 
 const PiscineMap = dynamic(
@@ -44,7 +45,6 @@ export function PiscineListPage() {
     reinitialiserFiltres,
   } = usePiscines()
 
-  // Un seul appel — partagé entre toutes les cards via props
   const { estFavori, toggleFavori, estConnecte } = useFavoris()
 
   const piscinesFiltrees = useMemo(() => {
@@ -67,13 +67,12 @@ export function PiscineListPage() {
         {/* Barre de recherche + contrôles */}
         <div className="flex items-center gap-3">
 
+          {/* Barre de recherche */}
           <div className="relative flex-1">
-            <span
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"
-              aria-hidden="true"
-            >
-              🔍
-            </span>
+            <Icon
+              name="lupa"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted"
+            />
             <input
               type="search"
               placeholder="Rechercher une piscine..."
@@ -85,6 +84,7 @@ export function PiscineListPage() {
             />
           </div>
 
+          {/* Bouton Filtres */}
           <button
             onClick={() => setFiltresOuverts(true)}
             className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl
@@ -93,7 +93,7 @@ export function PiscineListPage() {
                        shrink-0"
             aria-label="Ouvrir les filtres"
           >
-            <span aria-hidden="true">⚙️</span>
+            <Icon name="filtres" className="w-4 h-4 text-bleu-clair" />
             Filtres
             {nombreFiltresActifs > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-bleu-moyen text-white
@@ -104,10 +104,11 @@ export function PiscineListPage() {
             )}
           </button>
 
+          {/* Toggle liste / carte */}
           <div className="flex rounded-xl border border-border overflow-hidden shrink-0">
             <button
               onClick={() => setVue("liste")}
-              className={`px-3 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-colors ${
                 vue === "liste"
                   ? "bg-bleu-profond text-white"
                   : "bg-white text-muted hover:bg-bleu-tres-pale"
@@ -118,14 +119,15 @@ export function PiscineListPage() {
             </button>
             <button
               onClick={() => setVue("carte")}
-              className={`px-3 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition-colors ${
                 vue === "carte"
                   ? "bg-bleu-profond text-white"
                   : "bg-white text-muted hover:bg-bleu-tres-pale"
               }`}
               aria-label="Vue carte"
             >
-              ⊞ Carte
+              <Icon name="carte" className="w-4 h-4" />
+              Carte
             </button>
           </div>
         </div>

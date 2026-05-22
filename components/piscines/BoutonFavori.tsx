@@ -1,11 +1,12 @@
 // components/piscines/BoutonFavori.tsx
 // Bouton toggle favori — coeur plein/vide
-// Reçoit l'état des favoris via props (géré par PiscineListPage)
+// Reçoit l'état des favoris via props
 // Ouvre AuthPopup si l'utilisateur n'est pas connecté
 "use client"
 
 import { useState } from "react"
 import { AuthPopup } from "@/components/ui/AuthPopup"
+import { Icon } from "@/components/ui/Icon"
 
 interface BoutonFavoriProps {
   piscineId: number
@@ -41,7 +42,7 @@ export function BoutonFavori({
         <button
           onClick={handleClick}
           disabled={enCours}
-          className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
+          className={`flex items-center gap-2 flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
             ${estFavori
               ? "bg-rouge/10 text-rouge border border-rouge/20 hover:bg-rouge/20"
               : "bg-bleu-profond text-white hover:bg-bleu-moyen"
@@ -49,7 +50,11 @@ export function BoutonFavori({
             disabled:opacity-50 disabled:cursor-not-allowed`}
           aria-label={estFavori ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
-          {estFavori ? "♥ Dans mes favoris" : "♡ Ajouter aux favoris"}
+          <Icon
+            name={estFavori ? "coeur-plein" : "coeur"}
+            className="w-4 h-4"
+          />
+          {estFavori ? "Dans mes favoris" : "Ajouter aux favoris"}
         </button>
 
         <AuthPopup
@@ -75,9 +80,10 @@ export function BoutonFavori({
           disabled:opacity-50 disabled:cursor-not-allowed`}
         aria-label={estFavori ? "Retirer des favoris" : "Ajouter aux favoris"}
       >
-        <span className="text-lg" aria-hidden="true">
-          {estFavori ? "♥" : "♡"}
-        </span>
+        <Icon
+          name={estFavori ? "coeur-plein" : "coeur"}
+          className="w-5 h-5"
+        />
       </button>
 
       <AuthPopup

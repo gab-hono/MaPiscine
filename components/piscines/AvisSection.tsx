@@ -8,6 +8,7 @@ import { BoutonFavori } from "@/components/piscines/BoutonFavori"
 import { useState } from "react"
 import { FormulaireAvis } from "@/components/piscines/FormulaireAvis"
 import { useFavoris } from "@/hooks/useFavoris"
+import { Etoiles } from "../ui/Etoiles"
 
 // -----------------------------------------------------------------
 // Types — reflète la réponse de GET /api/avis?piscineId=:id
@@ -30,19 +31,6 @@ type Avis = {
 interface AvisSectionProps {
   avis: Avis[]
   piscineId: number
-}
-
-// -----------------------------------------------------------------
-// Composant étoiles
-// -----------------------------------------------------------------
-
-function Etoiles({ note }: { note: number }) {
-  return (
-    <span className="text-orange text-sm" aria-label={`${note} sur 5`}>
-      {"★".repeat(note)}
-      {"☆".repeat(5 - note)}
-    </span>
-  )
 }
 
 // -----------------------------------------------------------------
@@ -135,8 +123,6 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
   const [popupOuvert, setPopupOuvert] = useState(false)
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
 
-  // useFavoris instancié ici — acceptable car il n'y a qu'une seule piscine
-  // sur cette page (contrairement à la liste qui en a 42)
   const { estFavori, toggleFavori, estConnecte } = useFavoris()
 
   return (
