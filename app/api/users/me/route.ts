@@ -6,8 +6,6 @@ import { NextResponse } from "next/server";
 
 /* GET : Obtenemos los datos del user (protegendo contraseña) */
 export async function GET(req: Request) {
-    console.log('x-user-id header:', req.headers.get("x-user-id"))
-    console.log('authorization header:', req.headers.get("authorization"))
     try {
         /* Protegemos la ruta. Solo authentified puede acceder */
         const userId = req.headers.get("x-user-id")
