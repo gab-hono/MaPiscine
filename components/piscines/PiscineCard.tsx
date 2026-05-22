@@ -15,7 +15,6 @@ interface PiscineCardProps {
   estConnecte: boolean
 }
 
-// Affiche le nombre d'avis avec l'icône étoile — plus honnête que des étoiles fixes
 function CompteurAvis({ count }: { count: number }) {
   if (count === 0) {
     return <span className="text-xs text-muted">Aucun avis</span>
@@ -30,10 +29,10 @@ function CompteurAvis({ count }: { count: number }) {
 
 export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }: PiscineCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
 
-      {/* Zone image — avec bouton favori en overlay haut droite */}
-      <div className="relative h-32 bg-bleu-tres-pale flex items-center justify-center overflow-hidden">
+      {/* Zone image */}
+      <div className="relative h-40 md:h-48 bg-bleu-tres-pale flex items-center justify-center overflow-hidden shrink-0">
         {piscine.images_galerie.length > 0 ? (
           <img
             src={piscine.images_galerie[0]}
@@ -41,7 +40,7 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
             className="w-full h-full object-cover"
           />
         ) : (
-          <Icon name="natation" className="w-12 h-12 text-bleu-clair opacity-30" />
+          <Icon name="natation" className="w-14 h-14 text-bleu-clair opacity-30" />
         )}
 
         {/* Bouton favori */}
@@ -56,15 +55,17 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
         </div>
       </div>
 
-      {/* Contenu de la carte */}
-      <div className="p-4 flex flex-col gap-3">
+      {/* Contenu */}
+      <div className="p-4 md:p-5 flex flex-col gap-3 flex-1">
 
         {/* Nom + adresse */}
         <div>
-          <h2 className="font-bold text-bleu-profond text-base leading-tight">
-            {piscine.nom}
-          </h2>
-          <p className="text-xs text-muted mt-0.5 flex items-center gap-1">
+          <Link href={`/piscines/${piscine.id}`}>
+            <h2 className="font-bold text-bleu-profond text-base md:text-lg leading-tight hover:underline">
+              {piscine.nom}
+            </h2>
+          </Link>
+          <p className="text-xs md:text-sm text-muted mt-0.5 flex items-center gap-1">
             <Icon name="pin" className="w-3 h-3 text-bleu-clair shrink-0" />
             {piscine.adresse}, Paris {piscine.arrondissement}e
           </p>
@@ -81,8 +82,8 @@ export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }:
           {piscine.accepte_passe_paris && <Badge label="Pass 3 mois" variant="passe" />}
         </div>
 
-        {/* Avis + lien fiche */}
-        <div className="flex items-center justify-between">
+        {/* Avis + lien fiche — poussé en bas de la carte */}
+        <div className="flex items-center justify-between mt-auto pt-1">
           <CompteurAvis count={piscine._count?.avis ?? 0} />
           <Link
             href={`/piscines/${piscine.id}`}

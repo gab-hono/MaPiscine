@@ -1,6 +1,5 @@
 // components/piscines/PiscineList.tsx
 // Grille de cartes piscines — gère les états vide et chargement
-// Transmet les props favoris à chaque PiscineCard
 
 import type { Piscine } from "@/types/piscine"
 import { PiscineCard } from "@/components/piscines/PiscineCard"
@@ -11,7 +10,6 @@ interface PiscineListProps {
   piscines: Piscine[]
   loading: boolean
   onReinitialiserFiltres: () => void
-  // Props favoris — gérés par PiscineListPage, transmis ici
   estFavori: (piscineId: number) => boolean
   onToggleFavori: (piscineId: number) => void
   estConnecte: boolean
@@ -47,7 +45,8 @@ export function PiscineList({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    // 1 col mobile → 2 col tablette → 3 col desktop → 4 col grand écran
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
       {piscines.map((piscine) => (
         <PiscineCard
           key={piscine.id}
