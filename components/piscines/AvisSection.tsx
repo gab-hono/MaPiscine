@@ -5,9 +5,9 @@
 
 import { AuthPopup } from "@/components/ui/AuthPopup"
 import { BoutonFavori } from "@/components/piscines/BoutonFavori"
-import { useState, useEffect } from "react"
-import { authClient } from "@/src/lib/auth-client"
+import { useState } from "react"
 import { FormulaireAvis } from "@/components/piscines/FormulaireAvis"
+import { useFavoris } from "@/hooks/useFavoris"
 
 // -----------------------------------------------------------------
 // Types — reflète la réponse de GET /api/avis?piscineId=:id
@@ -33,7 +33,7 @@ interface AvisSectionProps {
 }
 
 // -----------------------------------------------------------------
-// Composant étoiles — affiche N étoiles pleines sur 5
+// Composant étoiles
 // -----------------------------------------------------------------
 
 function Etoiles({ note }: { note: number }) {
@@ -133,15 +133,11 @@ function CarteAvis({ avis }: { avis: Avis }) {
 
 export function AvisSection({ avis, piscineId }: AvisSectionProps) {
   const [popupOuvert, setPopupOuvert] = useState(false)
-  const [estConnecte, setEstConnecte] = useState(false)
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
-  const [avisLocaux, setAvisLocaux] = useState(avis)
 
-  useEffect(() => {
-    authClient.getSession().then((result) => {
-      setEstConnecte(!!result?.data?.user)
-    })
-  }, [])
+  // useFavoris instancié ici — acceptable car il n'y a qu'une seule piscine
+  // sur cette page (contrairement à la liste qui en a 42)
+  const { estFavori, toggleFavori, estConnecte } = useFavoris()
 
   return (
     <>
@@ -149,10 +145,17 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
 
         {/* Boutons d'action */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* BoutonFavori gère lui-même le popup d'auth si non connecté */}
-          <BoutonFavori piscineId={piscineId} variante="detail" />
 
-          {/* Bouton laisser un avis — popup si non connecté */}
+          {/* BoutonFavori reçoit l'état via props */}
+          <BoutonFavori
+            piscineId={piscineId}
+            variante="detail"
+            estFavori={estFavori(piscineId)}
+            onToggle={toggleFavori}
+            estConnecte={estConnecte}
+          />
+
+          {/* Bouton laisser un avis */}
           <button
             onClick={() => {
               if (!estConnecte) {
@@ -170,16 +173,15 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
         </div>
 
         {formulaireOuvert && (
-            <FormulaireAvis
-              piscineId={piscineId}
-              onSuccess={() => {
-                setFormulaireOuvert(false)
-                // Recharger la page pour voir le nouvel avis
-                window.location.reload()
-              }}
-              onAnnuler={() => setFormulaireOuvert(false)}
-            />
-          )}
+          <FormulaireAvis
+            piscineId={piscineId}
+            onSuccess={() => {
+              setFormulaireOuvert(false)
+              window.location.reload()
+            }}
+            onAnnuler={() => setFormulaireOuvert(false)}
+          />
+        )}
 
         {/* Liste des avis */}
         {avis.length === 0 ? (
@@ -188,9 +190,7 @@ export function AvisSection({ avis, piscineId }: AvisSectionProps) {
           </p>
         ) : (
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-muted">
-              {avis.length} avis
-            </p>
+            <p className="text-xs text-muted">{avis.length} avis</p>
             {avis.map((a) => (
               <CarteAvis key={a.id} avis={a} />
             ))}

@@ -1,5 +1,6 @@
 // components/piscines/PiscineCard.tsx
 // Carte visuelle d'une piscine dans la liste
+// Reçoit l'état favoris via props — pas d'appel API direct ici
 
 import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
@@ -8,6 +9,9 @@ import { BoutonFavori } from "@/components/piscines/BoutonFavori"
 
 interface PiscineCardProps {
   piscine: Piscine
+  estFavori: boolean
+  onToggleFavori: (piscineId: number) => void
+  estConnecte: boolean
 }
 
 function EtoilesAvis({ count }: { count: number }) {
@@ -21,7 +25,7 @@ function EtoilesAvis({ count }: { count: number }) {
   )
 }
 
-export function PiscineCard({ piscine }: PiscineCardProps) {
+export function PiscineCard({ piscine, estFavori, onToggleFavori, estConnecte }: PiscineCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow overflow-hidden">
 
@@ -39,7 +43,13 @@ export function PiscineCard({ piscine }: PiscineCardProps) {
 
         {/* Bouton favori — positionné en haut à droite de la zone image */}
         <div className="absolute top-2 right-2 bg-white rounded-full shadow-sm p-0.5">
-          <BoutonFavori piscineId={piscine.id} variante="card" />
+          <BoutonFavori
+            piscineId={piscine.id}
+            variante="card"
+            estFavori={estFavori}
+            onToggle={onToggleFavori}
+            estConnecte={estConnecte}
+          />
         </div>
       </div>
 
@@ -63,15 +73,9 @@ export function PiscineCard({ piscine }: PiscineCardProps) {
             label={piscine.is_open ? "Ouverte" : "Fermée"}
             variant={piscine.is_open ? "ouvert" : "ferme"}
           />
-          {piscine.acces_pmr && (
-            <Badge label="Accessible PMR" variant="pmr" />
-          )}
-          {piscine.queer_friendly && (
-            <Badge label="Queer Friendly" variant="queer" />
-          )}
-          {piscine.accepte_passe_paris && (
-            <Badge label="Pass 3 mois" variant="passe" />
-          )}
+          {piscine.acces_pmr && <Badge label="Accessible PMR" variant="pmr" />}
+          {piscine.queer_friendly && <Badge label="Queer Friendly" variant="queer" />}
+          {piscine.accepte_passe_paris && <Badge label="Pass 3 mois" variant="passe" />}
         </div>
 
         {/* Avis + lien fiche */}

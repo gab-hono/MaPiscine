@@ -1,10 +1,12 @@
 // components/piscines/PiscineListPage.tsx
-// Orchestrateur client — gère l'état global (filtres, toggle vue, recherche)
+// Orchestrateur client — gère l'état global (filtres, toggle vue, recherche, favoris)
+// useFavoris est instancié UNE SEULE FOIS ici — évite 42 appels API pour 42 cards
 "use client"
 
 import { useState, useMemo } from "react"
 import dynamic from "next/dynamic"
 import { usePiscines } from "@/hooks/usePiscines"
+import { useFavoris } from "@/hooks/useFavoris"
 import { PiscineList } from "@/components/piscines/PiscineList"
 import { FiltresDrawer } from "@/components/piscines/FiltresDrawer"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
@@ -24,11 +26,6 @@ const PiscineMap = dynamic(
 
 type VueMode = "liste" | "carte"
 
-// -----------------------------------------------------------------
-// Utilitaire : compte le nombre de filtres actifs
-// Utilisé pour afficher le badge sur le bouton Filtres
-// -----------------------------------------------------------------
-
 function compterFiltresActifs(filtres: PiscinesFiltres): number {
   return Object.values(filtres).filter((v) => v !== undefined).length
 }
@@ -45,11 +42,11 @@ export function PiscineListPage() {
     filtres,
     mettreAJourFiltre,
     reinitialiserFiltres,
-
   } = usePiscines()
 
-  // Filtrage frontend par nom — appliqué sur les piscines déjà chargées
-  // useMemo évite de recalculer à chaque render si piscines et recherche n'ont pas changé
+  // Un seul appel — partagé entre toutes les cards via props
+  const { estFavori, toggleFavori, estConnecte } = useFavoris()
+
   const piscinesFiltrees = useMemo(() => {
     if (!recherche.trim()) return piscines
     const terme = recherche.toLowerCase().trim()
@@ -70,7 +67,6 @@ export function PiscineListPage() {
         {/* Barre de recherche + contrôles */}
         <div className="flex items-center gap-3">
 
-          {/* Barre de recherche */}
           <div className="relative flex-1">
             <span
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm"
@@ -89,7 +85,6 @@ export function PiscineListPage() {
             />
           </div>
 
-          {/* Bouton Filtres */}
           <button
             onClick={() => setFiltresOuverts(true)}
             className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl
@@ -100,7 +95,6 @@ export function PiscineListPage() {
           >
             <span aria-hidden="true">⚙️</span>
             Filtres
-            {/* Badge nombre de filtres actifs */}
             {nombreFiltresActifs > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-bleu-moyen text-white
                                text-xs rounded-full w-5 h-5 flex items-center justify-center
@@ -110,7 +104,6 @@ export function PiscineListPage() {
             )}
           </button>
 
-          {/* Toggle liste / carte */}
           <div className="flex rounded-xl border border-border overflow-hidden shrink-0">
             <button
               onClick={() => setVue("liste")}
@@ -137,7 +130,7 @@ export function PiscineListPage() {
           </div>
         </div>
 
-        {/* Résumé des filtres actifs + recherche */}
+        {/* Résumé filtres actifs */}
         {(nombreFiltresActifs > 0 || recherche.trim()) && (
           <div className="flex items-center gap-2 text-sm text-muted">
             <span>
@@ -163,13 +156,14 @@ export function PiscineListPage() {
 
         {/* Mode liste */}
         {vue === "liste" && (
-          <>
-            <PiscineList
-              piscines={piscinesFiltrees}
-              loading={loading}
-              onReinitialiserFiltres={() => { reinitialiserFiltres(); setRecherche("") }}
-            />
-          </>
+          <PiscineList
+            piscines={piscinesFiltrees}
+            loading={loading}
+            onReinitialiserFiltres={() => { reinitialiserFiltres(); setRecherche("") }}
+            estFavori={estFavori}
+            onToggleFavori={toggleFavori}
+            estConnecte={estConnecte}
+          />
         )}
 
         {/* Mode carte */}
@@ -187,7 +181,6 @@ export function PiscineListPage() {
 
       </div>
 
-      {/* Drawer filtres */}
       <FiltresDrawer
         open={filtresOuverts}
         onClose={() => setFiltresOuverts(false)}

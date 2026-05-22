@@ -1,5 +1,6 @@
 // components/piscines/PiscineList.tsx
 // Grille de cartes piscines — gère les états vide et chargement
+// Transmet les props favoris à chaque PiscineCard
 
 import type { Piscine } from "@/types/piscine"
 import { PiscineCard } from "@/components/piscines/PiscineCard"
@@ -10,15 +11,24 @@ interface PiscineListProps {
   piscines: Piscine[]
   loading: boolean
   onReinitialiserFiltres: () => void
+  // Props favoris — gérés par PiscineListPage, transmis ici
+  estFavori: (piscineId: number) => boolean
+  onToggleFavori: (piscineId: number) => void
+  estConnecte: boolean
 }
 
-export function PiscineList({ piscines, loading, onReinitialiserFiltres }: PiscineListProps) {
-  // État chargement
+export function PiscineList({
+  piscines,
+  loading,
+  onReinitialiserFiltres,
+  estFavori,
+  onToggleFavori,
+  estConnecte,
+}: PiscineListProps) {
   if (loading) {
     return <LoadingSpinner message="Recherche des piscines..." />
   }
 
-  // État vide
   if (piscines.length === 0) {
     return (
       <EmptyState
@@ -36,11 +46,16 @@ export function PiscineList({ piscines, loading, onReinitialiserFiltres }: Pisci
     )
   }
 
-  // Grille de cartes — responsive : 1 colonne mobile, 2 tablette, 3 desktop
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {piscines.map((piscine) => (
-        <PiscineCard key={piscine.id} piscine={piscine} />
+        <PiscineCard
+          key={piscine.id}
+          piscine={piscine}
+          estFavori={estFavori(piscine.id)}
+          onToggleFavori={onToggleFavori}
+          estConnecte={estConnecte}
+        />
       ))}
     </div>
   )
