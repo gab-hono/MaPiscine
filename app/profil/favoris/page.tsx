@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { BoutonFavori } from "@/components/piscines/BoutonFavori"
 import { useFavoris } from "@/hooks/useFavoris"
 import type { Piscine } from "@/types/piscine"
+import { Icon } from "@/components/ui/Icon"
 
 type FavoriAvecPiscine = {
   id: string
@@ -122,7 +123,7 @@ export default function FavorisPage() {
                     {piscine.nom}
                   </p>
                   <p className="text-xs text-muted truncate">
-                    📍 {piscine.adresse}, Paris {piscine.arrondissement}e
+                    {piscine.adresse}, Paris {piscine.arrondissement}e
                   </p>
                   <div className="flex flex-wrap gap-1 mt-0.5">
                     <Badge
