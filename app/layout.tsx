@@ -13,9 +13,12 @@ const montserrat = Montserrat({
 })
 
 export const metadata: Metadata = {
-  title: "À la piscine !",
+  title: "MaPiscine",
   description:
     "Trouvez une piscine municipale accessible et inclusive à Paris. Filtrez par accès PMR, label Queer Friendly, horaires et tarifs.",
+  icons: {
+    icon: "/water-ladder-solid-full.svg"
+  },
 }
 
 export default function RootLayout({
