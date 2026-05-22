@@ -6,11 +6,10 @@ import { useState } from "react"
 
 interface SectionToggleProps {
   titre: string
-  icone?: string
+  // Accepte un emoji string ou un composant React (ex: <Icon name="horloge" />)
+  icone?: string | React.ReactNode
   children: React.ReactNode
-  // Ouvert par défaut — peut être fermé en passant defaultOuvert={false}
   defaultOuvert?: boolean
-  // Variante visuelle : "card" (avec bordure et fond blanc) ou "plain" (sans fond, pour les sous-sections)
   variante?: "card" | "plain"
 }
 
@@ -31,7 +30,7 @@ export function SectionToggle({
           className="flex items-center justify-between py-2 hover:text-bleu-moyen transition-colors"
           aria-expanded={ouvert}
         >
-          <span className="text-xs font-semibold text-muted uppercase tracking-wide">
+          <span className="text-xs font-semibold text-muted uppercase tracking-wide flex items-center gap-1">
             {icone && <span aria-hidden="true" className="mr-1">{icone}</span>}
             {titre}
           </span>

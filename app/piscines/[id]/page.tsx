@@ -5,9 +5,12 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import type { Piscine } from "@/types/piscine"
-import { Badge } from "@/components/ui/Badge"
 import { SectionToggle } from "@/components/ui/SectionToggle"
+import { Icon } from "@/components/ui/Icon"
 import { AvisSection } from "@/components/piscines/AvisSection"
+import { PiscineDetailHeader } from "@/components/piscines/PiscineDetailHeader"
+import { PiscineHoraires } from "@/components/piscines/PiscineHoraires"
+import { PiscineEquipements } from "@/components/piscines/PiscineEquipements"
 
 // -----------------------------------------------------------------
 // Fetch côté serveur — piscine
@@ -61,7 +64,7 @@ function grouperParJour(horaires: Piscine["horaires_reguliers"]) {
 }
 
 // -----------------------------------------------------------------
-// Composants internes (Server — pas de state)
+// Composant interne — ligne de tarif
 // -----------------------------------------------------------------
 
 function LigneInfo({ label, valeur }: { label: string; valeur: string | number | null }) {
@@ -70,19 +73,6 @@ function LigneInfo({ label, valeur }: { label: string; valeur: string | number |
     <div className="flex justify-between text-sm py-1.5 border-b border-border last:border-0">
       <span className="text-muted">{label}</span>
       <span className="font-medium text-foreground">{valeur}</span>
-    </div>
-  )
-}
-
-function EquipementItem({ label, actif }: { label: string; actif: boolean }) {
-  return (
-    <div
-      className={`text-sm px-3 py-2 rounded-lg flex items-center gap-2 ${
-        actif ? "bg-vert/10 text-vert" : "bg-gray-50 text-muted line-through"
-      }`}
-    >
-      <span aria-hidden="true">{actif ? "✓" : "✗"}</span>
-      {label}
     </div>
   )
 }
@@ -98,7 +88,6 @@ export default async function PiscineDetailPage({
 }) {
   const { id } = await params
 
-  // Fetch en parallèle — plus rapide qu'en séquence
   const [piscine, avis] = await Promise.all([
     getPiscine(id),
     getAvis(id),
@@ -122,86 +111,21 @@ export default async function PiscineDetailPage({
         {/* Bouton retour */}
         <Link
           href="/"
-          className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors flex items-center gap-1 w-fit"
+          className="flex items-center gap-1.5 text-sm text-bleu-moyen hover:text-bleu-profond transition-colors w-fit"
         >
-          ← Retour à la liste
+          <Icon name="fleche-gauche" className="w-3.5 h-3.5" />
+          Retour à la liste
         </Link>
 
-        {/* En-tête — toujours visible, pas de toggle */}
-        <div className="bg-white rounded-2xl border border-border overflow-hidden">
-          <div className="h-48 bg-bleu-tres-pale flex items-center justify-center">
-            {piscine.images_galerie.length > 0 ? (
-              <img
-                src={piscine.images_galerie[0]}
-                alt={piscine.nom}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-6xl opacity-20" aria-hidden="true">🏊</span>
-            )}
-          </div>
-
-          <div className="p-5 flex flex-col gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-bleu-profond">{piscine.nom}</h1>
-              <p className="text-sm text-muted mt-1 flex items-center gap-1">
-                <span aria-hidden="true">📍</span>
-                {piscine.adresse}, Paris {piscine.arrondissement}e
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                label={piscine.is_open ? "Ouverte" : "Fermée"}
-                variant={piscine.is_open ? "ouvert" : "ferme"}
-                size="md"
-              />
-              {piscine.acces_pmr && <Badge label="Accessible PMR" variant="pmr" size="md" />}
-              {piscine.queer_friendly && <Badge label="Queer Friendly" variant="queer" size="md" />}
-              {piscine.accepte_passe_paris && <Badge label="Pass 3 mois" variant="passe" size="md" />}
-            </div>
-
-            {piscine.description && (
-              <p className="text-sm text-foreground leading-relaxed">{piscine.description}</p>
-            )}
-
-            {/* Contact */}
-            <div className="flex flex-wrap gap-3 pt-1">
-              {piscine.telephone && (
-                <a
-                  href={`tel:${piscine.telephone}`}
-                  className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors"
-                >
-                  📞 {piscine.telephone}
-                </a>
-              )}
-              {piscine.site_web && (
-                <a
-                  href={piscine.site_web}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors"
-                >
-                  🌐 Site web
-                </a>
-              )}
-              {piscine.latitude && piscine.longitude && (
-                <a
-                  href={`https://www.google.com/maps?q=${piscine.latitude},${piscine.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-bleu-moyen hover:text-bleu-profond transition-colors"
-                >
-                  📍 Voir sur Google Maps
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* En-tête */}
+        <PiscineDetailHeader piscine={piscine} />
 
         {/* Bassins */}
         {piscine.bassins.length > 0 && (
-          <SectionToggle titre="Bassins" icone="🏊">
+          <SectionToggle
+            titre="Bassins"
+            icone={<Icon name="natation" className="w-4 h-4 text-bleu-clair" />}
+          >
             <div className="flex flex-col gap-3">
               {piscine.bassins.map((bassin) => (
                 <div
@@ -229,49 +153,14 @@ export default async function PiscineDetailPage({
 
         {/* Horaires */}
         {piscine.horaires_reguliers.length > 0 && (
-          <SectionToggle titre="Horaires" icone="🕐">
-            <div className="flex flex-col gap-3">
-              {(["SCOLAIRE", "VACANCES"] as const).map((periode) => {
-                const parJour = horairesGroupes[periode]
-                if (Object.keys(parJour).length === 0) return null
-
-                return (
-                  <SectionToggle
-                    key={periode}
-                    titre={periode === "SCOLAIRE" ? "Période scolaire" : "Période vacances scolaires"}
-                    variante="plain"
-                    defaultOuvert={periode === "SCOLAIRE"}
-                  >
-                    <div className="flex flex-col">
-                      {Object.entries(parJour).map(([jour, creneaux]) => (
-                        <div
-                          key={jour}
-                          className="flex justify-between text-sm py-1.5 border-b border-border last:border-0"
-                        >
-                          <span className="text-foreground font-medium w-24">{jour}</span>
-                          {creneaux[0].ferme ? (
-                            <span className="text-rouge">Fermé</span>
-                          ) : (
-                            <div className="flex flex-col items-end gap-0.5">
-                              {creneaux.map((h) => (
-                                <span key={h.id} className="text-muted">
-                                  {h.heure_ouverture} – {h.heure_fermeture}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </SectionToggle>
-                )
-              })}
-            </div>
-          </SectionToggle>
+          <PiscineHoraires horairesGroupes={horairesGroupes} />
         )}
 
         {/* Tarifs */}
-        <SectionToggle titre="Tarifs" icone="💶">
+        <SectionToggle
+          titre="Tarifs"
+          icone={<Icon name="tarifs" className="w-4 h-4 text-bleu-clair" />}
+        >
           <LigneInfo label="Entrée normale" valeur={piscine.prix_entree_normal ? `${piscine.prix_entree_normal} €` : null} />
           <LigneInfo label="Entrée réduite" valeur={piscine.prix_entree_reduit ? `${piscine.prix_entree_reduit} €` : null} />
           <LigneInfo label="Carnet 10 entrées" valeur={piscine.prix_carnet_normal ? `${piscine.prix_carnet_normal} €` : null} />
@@ -282,24 +171,14 @@ export default async function PiscineDetailPage({
         </SectionToggle>
 
         {/* Équipements */}
-        <SectionToggle titre="Équipements & espaces" icone="🛁">
-          <div className="grid grid-cols-2 gap-2">
-            <EquipementItem label="Sèche-cheveux" actif={piscine.seche_cheveux} />
-            <EquipementItem label="Casiers" actif={piscine.casiers} />
-            <EquipementItem label="Dist. boissons" actif={piscine.distributeur_boisson} />
-            <EquipementItem label="Dist. équipements" actif={piscine.distributeur_equipements} />
-            <EquipementItem label="Solarium" actif={piscine.espace_solarium} />
-            <EquipementItem label="Vestiaires mixtes" actif={piscine.vestiaires_mixtes} />
-            <EquipementItem label="Cabines indiv." actif={piscine.cabines_individuelles} />
-            <EquipementItem label="Douches indiv." actif={piscine.douches_individuelles} />
-            <EquipementItem label="Douches collectives" actif={piscine.douches_collectives} />
-            <EquipementItem label="Cabine PMR" actif={piscine.cabine_pmr} />
-          </div>
-        </SectionToggle>
+        <PiscineEquipements piscine={piscine} />
 
         {/* Activités */}
         {piscine.activites.length > 0 && (
-          <SectionToggle titre="Activités" icone="🤽">
+          <SectionToggle
+            titre="Activités"
+            icone={<Icon name="activites" className="w-4 h-4 text-bleu-clair" />}
+          >
             <div className="flex flex-wrap gap-2">
               {piscine.activites.map((activite) => (
                 <span
@@ -314,7 +193,11 @@ export default async function PiscineDetailPage({
         )}
 
         {/* Avis + boutons d'action */}
-        <SectionToggle titre="Avis" icone="★" defaultOuvert={true}>
+        <SectionToggle
+          titre="Avis"
+          icone={<Icon name="etoile" className="w-4 h-4 text-bleu-clair" />}
+          defaultOuvert={true}
+        >
           <AvisSection avis={avis} piscineId={piscine.id} />
         </SectionToggle>
 

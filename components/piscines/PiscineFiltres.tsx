@@ -1,13 +1,11 @@
 // components/piscines/PiscineFiltres.tsx
-// Panel de filtres multicritères — version simplifiée pour le demo day
+// Panel de filtres multicritères
+// Décision UX : cabines_individuelles, douches_individuelles et douches_collectives
+// supprimées des filtres car présentes dans toutes les piscines parisiennes
 "use client"
 
 import type { PiscinesFiltres } from "@/hooks/usePiscines"
 
-// -----------------------------------------------------------------
-// Sous-composants internes
-// -----------------------------------------------------------------
- 
 function SectionFiltres({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2">
@@ -16,29 +14,29 @@ function SectionFiltres({ titre, children }: { titre: string; children: React.Re
     </div>
   )
 }
- 
+
 function CheckboxFiltre({
-    id, label, checked, onChange,
-  }: {
-    id: string
-    label: string
-    checked: boolean
-    onChange: (val: boolean) => void
-  }) {
-    return (
-      <label htmlFor={id} className="flex items-center gap-2 cursor-pointer group">
-        <input
-          id={id}
-          type="checkbox"
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="w-4 h-4 rounded border-border accent-bleu-moyen focus:ring-bleu-clair"
-        />
-        <span className="text-sm text-foreground group-hover:text-bleu-moyen transition-colors">
-          {label}
-        </span>
-      </label>
-    )
+  id, label, checked, onChange,
+}: {
+  id: string
+  label: string
+  checked: boolean
+  onChange: (val: boolean) => void
+}) {
+  return (
+    <label htmlFor={id} className="flex items-center gap-2 cursor-pointer group">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="w-4 h-4 rounded border-border accent-bleu-moyen focus:ring-bleu-clair"
+      />
+      <span className="text-sm text-foreground group-hover:text-bleu-moyen transition-colors">
+        {label}
+      </span>
+    </label>
+  )
 }
 
 interface PiscineFiltresProps {
@@ -47,7 +45,6 @@ interface PiscineFiltresProps {
   onReinitialiser: () => void
 }
 
-// Arrondissements de Paris (1 à 20)
 const ARRONDISSEMENTS = Array.from({ length: 20 }, (_, i) => i + 1)
 
 export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: PiscineFiltresProps) {
@@ -73,24 +70,19 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           id="arrondissement"
           value={filtres.arrondissement ?? ""}
           onChange={(e) =>
-            onMettreAJour(
-              "arrondissement",
-              e.target.value ? Number(e.target.value) : undefined
-            )
+            onMettreAJour("arrondissement", e.target.value ? Number(e.target.value) : undefined)
           }
           className="text-sm rounded-lg border border-border px-3 py-2 bg-white text-foreground
                      focus:outline-none focus:ring-2 focus:ring-bleu-clair"
         >
           <option value="">Tous les arrondissements</option>
           {ARRONDISSEMENTS.map((arr) => (
-            <option key={arr} value={arr}>
-              {arr}e arrondissement
-            </option>
+            <option key={arr} value={arr}>{arr}e arrondissement</option>
           ))}
         </select>
       </div>
 
-            {/* Accessibilité */}
+      {/* Accessibilité */}
       <SectionFiltres titre="Accessibilité">
         <CheckboxFiltre
           id="acces_pmr" label="Accessible PMR"
@@ -113,7 +105,7 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           onChange={(v) => onMettreAJour("accepte_passe_paris", v || undefined)}
         />
       </SectionFiltres>
- 
+
       {/* Équipements */}
       <SectionFiltres titre="Équipements">
         <CheckboxFiltre
@@ -137,8 +129,8 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           onChange={(v) => onMettreAJour("distributeur_equipements", v || undefined)}
         />
       </SectionFiltres>
- 
-      {/* Espaces */}
+
+      {/* Espaces — uniquement les différenciateurs */}
       <SectionFiltres titre="Espaces">
         <CheckboxFiltre
           id="espace_solarium" label="Espace solarium"
@@ -151,31 +143,16 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           onChange={(v) => onMettreAJour("vestiaires_mixtes", v || undefined)}
         />
         <CheckboxFiltre
-          id="cabines_individuelles" label="Cabines individuelles"
-          checked={filtres.cabines_individuelles === true}
-          onChange={(v) => onMettreAJour("cabines_individuelles", v || undefined)}
-        />
-        <CheckboxFiltre
-          id="douches_individuelles" label="Douches individuelles"
-          checked={filtres.douches_individuelles === true}
-          onChange={(v) => onMettreAJour("douches_individuelles", v || undefined)}
-        />
-        <CheckboxFiltre
-          id="douches_collectives" label="Douches collectives"
-          checked={filtres.douches_collectives === true}
-          onChange={(v) => onMettreAJour("douches_collectives", v || undefined)}
-        />
-        <CheckboxFiltre
           id="cabine_pmr" label="Cabine PMR"
           checked={filtres.cabine_pmr === true}
           onChange={(v) => onMettreAJour("cabine_pmr", v || undefined)}
         />
       </SectionFiltres>
- 
+
       {/* Bassins */}
       <SectionFiltres titre="Bassins">
         <div className="flex flex-col gap-2">
-          <label className="text-sm text-foreground">Longueur du bassin</label>
+          <label className="text-xs text-muted">Longueur du bassin</label>
           <div className="flex gap-2">
             {[25, 50].map((longueur) => (
               <button
@@ -198,6 +175,7 @@ export function PiscineFiltres({ filtres, onMettreAJour, onReinitialiser }: Pisc
           </div>
         </div>
       </SectionFiltres>
+
     </div>
   )
 }
