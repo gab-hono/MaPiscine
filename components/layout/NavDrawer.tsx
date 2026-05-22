@@ -81,7 +81,7 @@ export function NavDrawer({ open, onClose }: NavDrawerProps) {
             className="text-muted hover:text-foreground transition-colors"
             aria-label="Fermer le menu"
           >
-            Ⅹ
+            <Icon name="croix" className="w-4 h-4 text-bleu-clair" />
           </button>
         </div>
 

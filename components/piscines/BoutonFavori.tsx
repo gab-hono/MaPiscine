@@ -42,7 +42,7 @@ export function BoutonFavori({
         <button
           onClick={handleClick}
           disabled={enCours}
-          className={`flex items-center gap-2 flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
+          className={`flex items-center justify-center gap-2 flex-1 py-3 rounded-xl font-semibold text-sm transition-colors
             ${estFavori
               ? "bg-rouge/10 text-rouge border border-rouge/20 hover:bg-rouge/20"
               : "bg-bleu-profond text-white hover:bg-bleu-moyen"
