@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/Badge"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"
 import { BoutonFavori } from "@/components/piscines/BoutonFavori"
+import { useFavoris } from "@/hooks/useFavoris"
 import type { Piscine } from "@/types/piscine"
 
 type FavoriAvecPiscine = {
@@ -24,15 +25,15 @@ export default function FavorisPage() {
   const [loading, setLoading] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
 
+  // useFavoris instancié une seule fois — fournit estFavori/toggleFavori/estConnecte
+  const { estFavori, toggleFavori, estConnecte } = useFavoris()
+
   useEffect(() => {
-    // Vérifier que l'utilisateur est connecté
     authClient.getSession().then((result) => {
       if (!result?.data?.user) {
         router.push("/connexion")
         return
       }
-
-      // Charger les favoris
       fetch("/api/favoris")
         .then((res) => res.json())
         .then((json) => setFavoris(json.data ?? []))
@@ -40,6 +41,15 @@ export default function FavorisPage() {
         .finally(() => setLoading(false))
     })
   }, [router])
+
+  // Quand l'utilisateur retire un favori, on le supprime aussi de la liste locale
+  async function handleToggle(piscineId: number) {
+    await toggleFavori(piscineId)
+    // Si le favori vient d'être retiré, on le supprime de l'affichage
+    if (estFavori(piscineId)) {
+      setFavoris((prev) => prev.filter((f) => f.piscineId !== piscineId))
+    }
+  }
 
   if (loading) {
     return (
@@ -125,10 +135,13 @@ export default function FavorisPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Bouton retirer des favoris */}
-                  <BoutonFavori piscineId={piscineId} variante="card" />
-
-                  {/* Lien vers la fiche */}
+                  <BoutonFavori
+                    piscineId={piscineId}
+                    variante="card"
+                    estFavori={estFavori(piscineId)}
+                    onToggle={handleToggle}
+                    estConnecte={estConnecte}
+                  />
                   <Link
                     href={`/piscines/${piscineId}`}
                     className="p-2 rounded-xl bg-bleu-tres-pale text-bleu-moyen
