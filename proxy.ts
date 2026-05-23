@@ -10,7 +10,8 @@ export async function proxy(req: NextRequest) {
     const token = decodeURIComponent(cookieValue).split(".")[0]
     const baseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000"
     const verifyResponse = await fetch(`${baseUrl}/api/auth/verify`, {
-      headers: { authorization: `Bearer ${token}` },
+      headers: { authorization: `Bearer ${token}`,
+                origin: baseUrl },
     })
     if (!verifyResponse.ok) return NextResponse.next() // token inválido → anónimo
 
@@ -42,6 +43,7 @@ export async function proxy(req: NextRequest) {
   const verifyResponse = await fetch(`${baseUrl}/api/auth/verify`, {
     headers: {
       authorization: `Bearer ${token}`,
+      origin: baseUrl,
     },
   })
 
