@@ -21,7 +21,7 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "USER",
-        input: false, // el usuario no puede establecer su propio rol
+        input: false,
       },
       pronoms: {
         type: "string",

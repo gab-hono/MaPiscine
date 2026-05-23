@@ -4,7 +4,10 @@ export async function proxy(req: NextRequest) {
 
   if (req.method === 'GET' && req.nextUrl.pathname === '/api/avis') {
 
-    const cookieValue = req.cookies.get("better-auth.session_token")?.value ?? null
+    const cookieValue = 
+      req.cookies.get("better-auth.session_token")?.value ??
+      req.cookies.get("__Secure-better-auth.session_token")?.value ??
+      null
     if (!cookieValue) return NextResponse.next()
 
     const token = decodeURIComponent(cookieValue).split(".")[0]
@@ -25,7 +28,10 @@ export async function proxy(req: NextRequest) {
   let token = req.headers.get("authorization")?.replace("Bearer ", "")
 
   if (!token) {
-    const cookieValue = req.cookies.get("better-auth.session_token")?.value ?? null
+    const cookieValue = 
+      req.cookies.get("better-auth.session_token")?.value ??
+      req.cookies.get("__Secure-better-auth.session_token")?.value ??
+      null
   if (cookieValue) {
 
     token = decodeURIComponent(cookieValue).split(".")[0]
