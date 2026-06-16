@@ -1,78 +1,51 @@
-//app/api/auth/register/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/src/lib/prisma";
+// app/api/auth/register/route.ts
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/src/lib/prisma"
+import { auth } from "@/src/lib/auth"
+import { registerSchema } from "@/src/lib/validations/auth"
+import { ZodError } from "zod"
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, email, password, pronoms } = body;
+    const body = await req.json()
+    const parsed = registerSchema.safeParse(body)
 
-    // Validar campos obligatorios
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: "Nom, email et mot de passe sont obligatoires" },
-        { status: 400 }
-      );
+    if (!parsed.success) {
+      const firstError = parsed.error.errors[0].message
+      return NextResponse.json({ error: firstError }, { status: 400 })
     }
 
-    // Validar formato email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Format d'email invalide" },
-        { status: 400 }
-      );
-    }
+    const { name, email, password, pronoms } = parsed.data
 
-    // Validar longitud password
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 8 caractères" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar si el email ya existe
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    // Verificar unicidad del email antes de intentar crear
+    const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) {
       return NextResponse.json(
         { error: "Cet email est déjà utilisé" },
         { status: 409 }
-      );
+      )
     }
 
-    // Registrar el usuario via Better Auth API
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    // Llamada directa a Better Auth — sin HTTP interno
+    const signUpResult = await auth.api.signUpEmail({
+      body: { name, email, password },
+    })
 
-    const response = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Origin": baseUrl,  // ← añadir esta línea
-        },
-        body: JSON.stringify({ name, email, password }),
-        });
-
-    if (!response.ok) {
-      const error = await response.json();
+    if (!signUpResult?.user) {
       return NextResponse.json(
-        { error: error.message || "Erreur lors de l'inscription" },
-        { status: response.status }
-      );
+        { error: "Erreur lors de la création du compte" },
+        { status: 500 }
+      )
     }
 
-    // Ajouter les champs personnalisés si fournis
+    // Ajouter les champs personnalisés
     if (pronoms) {
       await prisma.user.update({
         where: { email },
         data: { pronoms },
-      });
+      })
     }
 
-    // Devolver usuario creado sin datos sensibles
     const newUser = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -83,15 +56,20 @@ export async function POST(req: NextRequest) {
         role: true,
         createdAt: true,
       },
-    });
+    })
 
-    return NextResponse.json(newUser, { status: 201 });
-
+    return NextResponse.json(newUser, { status: 201 })
   } catch (error) {
-    console.error("Erreur register:", error);
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      )
+    }
+    console.error("Erreur register:", error)
     return NextResponse.json(
       { error: "Erreur interne du serveur" },
       { status: 500 }
-    );
+    )
   }
 }
