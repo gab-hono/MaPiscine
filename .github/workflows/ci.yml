@@ -9,6 +9,7 @@ jobs:
             AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
             BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
             NEXT_PUBLIC_BETTER_AUTH_URL: ${{ secrets.NEXT_PUBLIC_BETTER_AUTH_URL }}
+            RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         steps:
             - name: "Download code from repository"
               uses: actions/checkout@v4
