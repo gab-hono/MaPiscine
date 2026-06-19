@@ -8,6 +8,20 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signUp } from "@/src/lib/auth-client"
 
+// Même règles que registerSchema côté serveur (src/lib/validations/auth.ts)
+function validerMotDePasse(password: string): string | null {
+  if (password.length < 8) {
+    return "Le mot de passe doit contenir au moins 8 caractères."
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Le mot de passe doit contenir au moins une majuscule."
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Le mot de passe doit contenir au moins un chiffre."
+  }
+  return null
+}
+
 export default function InscriptionPage() {
   const router = useRouter()
   const [nom, setNom] = useState("")
@@ -24,14 +38,14 @@ export default function InscriptionPage() {
     e.preventDefault()
     setErreur(null)
 
-    // Validation côté client
-    if (motDePasse !== confirmation) {
-      setErreur("Les mots de passe ne correspondent pas.")
+    const erreurPassword = validerMotDePasse(motDePasse)
+    if (erreurPassword) {
+      setErreur(erreurPassword)
       return
     }
 
-    if (motDePasse.length < 8) {
-      setErreur("Le mot de passe doit contenir au moins 8 caractères.")
+    if (motDePasse !== confirmation) {
+      setErreur("Les mots de passe ne correspondent pas.")
       return
     }
 
@@ -42,7 +56,6 @@ export default function InscriptionPage() {
         email,
         password: motDePasse,
         name: nom,
-        // Champs additionnels définis dans auth.ts
         // @ts-expect-error — Better Auth accepte les champs additionnels mais ne les type pas automatiquement
         pronoms: pronoms || null,
       })
@@ -146,29 +159,37 @@ export default function InscriptionPage() {
           </div>
 
           {/* Mot de passe */}
-          <div className="relative">
-            <input
-                id="mot-de-passe"
-                type={showPassword ? "text" : "password"}
-                value={motDePasse}
-                onChange={(e) => setMotDePasse(e.target.value)}
-                required
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="w-full px-4 py-2.5 pr-11 rounded-xl border border-border text-sm
-                        text-foreground placeholder:text-muted bg-white
-                        focus:outline-none focus:ring-2 focus:ring-bleu-clair"
-            />
-            <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted
-                        hover:text-foreground transition-colors"
-                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-            >
-                {showPassword ? "🙈" : "👁️"}
-            </button>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="mot-de-passe" className="text-sm font-semibold text-foreground">
+              Mot de passe
+            </label>
+            <div className="relative">
+              <input
+                  id="mot-de-passe"
+                  type={showPassword ? "text" : "password"}
+                  value={motDePasse}
+                  onChange={(e) => setMotDePasse(e.target.value)}
+                  required
+                  autoComplete="new-password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 pr-11 rounded-xl border border-border text-sm
+                          text-foreground placeholder:text-muted bg-white
+                          focus:outline-none focus:ring-2 focus:ring-bleu-clair"
+              />
+              <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted
+                          hover:text-foreground transition-colors"
+                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              >
+                  {showPassword ? "🙈" : "👁️"}
+              </button>
             </div>
+            <p className="text-xs text-muted">
+              8 caractères minimum, avec une majuscule et un chiffre.
+            </p>
+          </div>
 
           {/* Confirmation mot de passe */}
           <div className="flex flex-col gap-1.5">
@@ -182,7 +203,7 @@ export default function InscriptionPage() {
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="••••••••"
                 className="w-full px-4 py-2.5 pr-11 rounded-xl border border-border text-sm
                         text-foreground placeholder:text-muted bg-white
