@@ -37,14 +37,12 @@ L'application poursuit trois objectifs :
 
 ### Administrateur·ice (agent·e de piscine)
 
-* Tableau de bord dédié accessible après authentification
-* Consultation du détail complet de sa piscine assignée et de tous les avis reçus
-* Mise à jour des champs temps réel : `queer_friendly`, `acces_pmr`, `is_open`, `espace_solarium`
-* Accès strictement limité à la piscine assignée
+* Backend implémenté et testé, l'API REST est fonctionnelle et sécurisée : vérification du rôle, vérification que la piscine demandée correspond à celle assignée à l'admin, validation des champs modifiables (queer_friendly, acces_pmr, is_open, espace_solarium).
+* Frontend non développé dans le cadre de cette session. Le tableau de bord existe au stade de la maquette (Figma) mais n'a pas été codé, faute de temps.
 
 ---
 
-## 🛠 Stack technique
+## Stack technique
 
 | Couche | Technologie |
 | --- | --- |
@@ -128,7 +126,7 @@ Les routes admin vérifient en plus que le `piscineId` de la piscine demandée c
 
 ---
 
-## 🚀 Installation et lancement
+## Installation et lancement
 
 ```bash
 # Cloner le repo
@@ -157,7 +155,7 @@ npm run dev
 
 ---
 
-## ☁️ Déploiement
+## Déploiement
 
 | Service | Plateforme | Usage |
 | --- | --- | --- |
@@ -167,4 +165,4 @@ npm run dev
 
 ---
 
-*Projet développé dans le cadre du titre RNCP niveau 6, par GABRIEL HONO · Ada Tech School · 2025–2026*
+*Projet développé dans le cadre du titre RNCP niveau 6, par GABRIEL HONO · Ada Tech School · 2025 - 2026*
